@@ -9,9 +9,11 @@ use Illuminate\Support\Carbon;
 
 class BookingService
 {
-    public function createPendingAppointment(array $data, int $barberId): Appointment
+    public function createPendingAppointment(array $data, int $barberId, string $idempotencyKey): Appointment
     {
-        return Appointment::create([
+        return Appointment::firstOrCreate(
+            ['idempotency_key' => $idempotencyKey],
+            [
             'barber_id' => $barberId,
             'service_id' => $data['service_id'],
             'customer_name' => $data['customer_name'],
@@ -39,6 +41,19 @@ class BookingService
     public function confirmAppointment(int $appointmentId):void
     {
         Appointment::where('id', $appointmentId)->update(['status'=>'booked']);
+    }
+
+    public function isSlotAvailable(int $barberId, Carbon $startAt, int $durationMinutes): bool
+    {
+        $endAt = $startAt->copy()->addMinutes($durationMinutes);
+
+        return !Appointment::where('barber_id',$barberId)
+            ->whereIn('status',['pending','booked'])
+            ->where(function($query) use ($startAt, $endAt){
+                $query->whereBetween('start_at',[$startAt,$endAt])
+                ->orWhereBetween('start_at',[$startAt->copy()->subMinutes(1),$endAt->copy()->subMinutes(1)]);
+            })
+            ->exists();
     }
 
 }

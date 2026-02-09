@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Events\AppointmentBooked;
 use App\Models\Appointment;
 use App\Models\Barber;
 use App\Models\PhoneVerification;
@@ -9,6 +10,8 @@ use App\Models\Service;
 use App\Services\BookingService;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
+use Illuminate\Support\Str;
+
 
 class BookingForm extends Component
 {
@@ -25,10 +28,15 @@ class BookingForm extends Component
     public $pending_appointment_id;
     public $step = 'form'; //form|verify
 
+    public $idempotency_key;
+
+
+
     public function mount(): void
     {
         $this->services = Service::orderBy('name')->get();
         $this->barber = Barber::where('is_active', true)->first();
+        $this->idempotency_key = (string) Str::uuid();
 
         if ($this->services->isNotEmpty()) {
             $this->service_id = $this->services->first()->id;
@@ -45,9 +53,21 @@ class BookingForm extends Component
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $bookingService = app(BookingService::class);
+        if(now()->gte(Carbon::parse($data['start_at']))){
+            $this->addError('start_at','Please choose a future time.');
+            return;
+        }
 
-        $appointment = $bookingService->createPendingAppointment($data,$this->barber->id);
+        $service = Service::find($data['service_id']);
+        $bookingService = app(BookingService::class);
+        $startAt = Carbon::parse($data['start_at']);
+
+        if(!$bookingService->isSlotAvailable($this->barber->id, $startAt,$service->duration_minutes)){
+            $this->addError('start_at', 'This time is already booked. Please choose another slot');
+            return;
+        }
+
+        $appointment = $bookingService->createPendingAppointment($data,$this->barber->id,$this->idempotency_key);
         $bookingService->createVerification($data['customer_phone']);
 
         $this->pending_appointment_id = $appointment->id;
@@ -79,10 +99,17 @@ class BookingForm extends Component
 
         $bookingService->confirmAppointment($this->pending_appointment_id);
 
+        event(new AppointmentBooked(
+            Appointment::find($this->pending_appointment_id)
+        ));
+
         $this->reset(['customer_name', 'customer_phone', 'start_at', 'notes', 'verification_code', 'pending_appointment_id']);
+        $this->idempotency_key = (string) Str::uuid();
         $this->step = 'form';
 
         session()->flash('message','Appointment confirmed.');
+
+        
     }
 
       public function render()
