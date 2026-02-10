@@ -13,9 +13,13 @@
     @livewireStyles
 </head>
 
-<a href="{{ route('cancel.by.phone.show') }}" class="text-sm text-slate-600 underline">
-    Cancel by phone
-</a>
+<div class="mt-6 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+    Need to cancel later?
+    <a href="{{ route('cancel.by.phone.show') }}" class="underline text-slate-800">
+        Cancel by phone
+    </a>
+</div>
+
 
 <body class="min-h-screen bg-slate-50 text-slate-900">
     <div class="mx-auto max-w-2xl px-6 py-12">

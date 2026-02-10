@@ -32,7 +32,7 @@ class BookingForm extends Component
 
     public $suggested_start_at;
 
-    public $cancel_link;
+    
 
 
     public function mount(): void
@@ -109,14 +109,7 @@ class BookingForm extends Component
         $bookingService->confirmAppointment($this->pending_appointment_id);
 
         $appointment = Appointment::findOrFail($this->pending_appointment_id);
-
-        if (!$appointment->cancel_token) {
-            $appointment->cancel_token = (string) Str::uuid();
-            $appointment->save();
-        }
-
-        $this->cancel_link = route('appointments.cancel.show', $appointment->cancel_token);
-
+        
         event(new AppointmentBooked($appointment));
         
         $this->reset(['customer_name', 'customer_phone', 'start_at', 'notes', 'verification_code', 'pending_appointment_id']);
@@ -125,8 +118,6 @@ class BookingForm extends Component
         $this->step = 'form';
 
         session()->flash('message','Appointment confirmed.');
-
-        
     }
 
       public function render()
