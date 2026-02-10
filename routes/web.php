@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AppointmentStatusController;
+use App\Http\Controllers\AppointmentCancelController;
+use App\Http\Controllers\CancelByPhoneController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
@@ -15,7 +17,7 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-//Admin access
+// Admin (auth + admin)
 Route::middleware(['auth','admin'])->group(function () {
     Route::get('/admin/appointments',function (Request $request){
         $query = Appointment::with('service');
@@ -46,6 +48,23 @@ Route::middleware(['auth','admin'])->group(function () {
         ->name('admin.appointments.done');
     Route::patch('/admin/appointments/{appointment}/cancel',[AppointmentStatusController::class,'cancel'])
         ->name('admin.appointments.cancel');
-});
+    });
+    
+    // Cancel by token (public)
+    Route::get('/cancel/{token}',[AppointmentCancelController::class,'show'])
+        ->name('appointments.cancel.show');
+    Route::post('/cancel/{token}', [AppointmentCancelController::class,'cancel'])
+        ->name('appointments.cancel');
+    
+        // Cancel by phone (public)
+    Route::get('/cancel-by-phone', [CancelByPhoneController::class, 'show'])->name('cancel.by.phone.show');
+    Route::post('/cancel-by-phone', [CancelByPhoneController::class, 'sendCode'])->name('cancel.by.phone.send');
+    Route::post('/cancel-by-phone/verify', [CancelByPhoneController::class, 'verify'])->name('cancel.by.phone.verify');
+    Route::post('/cancel-by-phone/{appointment}/cancel', [CancelByPhoneController::class, 'cancel'])
+        ->name('cancel.by.phone.cancel');
+    Route::get('/cancel-by-phone/verify', function () {
+        return redirect()->route('cancel.by.phone.show');
+    });
+
 
 require __DIR__.'/auth.php';

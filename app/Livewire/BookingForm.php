@@ -32,6 +32,9 @@ class BookingForm extends Component
 
     public $suggested_start_at;
 
+    public $cancel_link;
+
+
     public function mount(): void
     {
         $this->services = Service::orderBy('name')->get();
@@ -105,11 +108,19 @@ class BookingForm extends Component
 
         $bookingService->confirmAppointment($this->pending_appointment_id);
 
-        event(new AppointmentBooked(
-            Appointment::find($this->pending_appointment_id)
-        ));
+        $appointment = Appointment::findOrFail($this->pending_appointment_id);
 
+        if (!$appointment->cancel_token) {
+            $appointment->cancel_token = (string) Str::uuid();
+            $appointment->save();
+        }
+
+        $this->cancel_link = route('appointments.cancel.show', $appointment->cancel_token);
+
+        event(new AppointmentBooked($appointment));
+        
         $this->reset(['customer_name', 'customer_phone', 'start_at', 'notes', 'verification_code', 'pending_appointment_id']);
+        $this->suggested_start_at = null;
         $this->idempotency_key = (string) Str::uuid();
         $this->step = 'form';
 

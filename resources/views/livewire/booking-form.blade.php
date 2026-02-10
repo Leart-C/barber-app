@@ -62,6 +62,12 @@
                 Book Appointment
             </button>
         </form>
+        @if ($cancel_link)
+            <div class="mt-3 text-sm text-slate-600">
+                Save this link if you need to cancel:
+                <a href="{{ $cancel_link }}" class="underline text-slate-800">{{ $cancel_link }}</a>
+            </div>
+        @endif
     @else
         <form wire:submit.prevent="verify" class="grid gap-4">
             <label class="grid gap-1 text-sm font-medium">

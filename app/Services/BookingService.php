@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\PhoneVerification;
 use App\Models\Service;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class BookingService
 {
@@ -24,6 +25,8 @@ class BookingService
             'duration_minutes' => $service->duration_minutes,
             'notes' => $data['notes'] ?? null,
             'status' => 'pending',
+            'cancel_token' => (string) Str::uuid(),
+
         ]);
     }
 
@@ -35,6 +38,7 @@ class BookingService
             'phone' => $phone,
             'code' => $code,
             'expires_at' => now()->addMinutes(10),
+            'cancel_token' => (string) Str::uuid(),
         ]);
 
         SendVerificationCode::dispatch($phone,$code);
@@ -85,6 +89,8 @@ class BookingService
             $cursor = Carbon::parse($overlap->start_at)->addMinutes($overlap->duration_minutes);
             }
     }
+
+    
 
 
 }
