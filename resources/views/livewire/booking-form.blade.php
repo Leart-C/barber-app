@@ -42,6 +42,16 @@
                 @enderror
             </label>
 
+            @if ($suggested_start_at)
+                <div class="text-sm text-slate-600">
+                    Next available:
+                    <button type="button" class="underline" wire:click="$set('start_at', '{{ $suggested_start_at }}')">
+                        {{ \Carbon\Carbon::parse($suggested_start_at)->format('Y-m-d H:i') }}
+                    </button>
+                </div>
+            @endif
+
+
             <label class="grid gap-1 text-sm font-medium">
                 Notes (optional)
                 <textarea wire:model="notes" rows="3" class="rounded-lg border border-slate-300 px-3 py-2"></textarea>

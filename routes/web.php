@@ -19,7 +19,7 @@ Route::middleware(['auth','admin'])->group(function () {
 
     Route::get('/admin/appointments',function (){
         $appointments = Appointment::with('service')
-            ->orderBy('start_at')
+            ->orderByDesc('created_at')
             ->get();
         return view('admin.appointments',compact('appointments'));
     })->name('admin.appointments');

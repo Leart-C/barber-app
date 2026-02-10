@@ -30,7 +30,7 @@ class BookingForm extends Component
 
     public $idempotency_key;
 
-
+    public $suggested_start_at;
 
     public function mount(): void
     {
@@ -63,9 +63,15 @@ class BookingForm extends Component
         $startAt = Carbon::parse($data['start_at']);
 
         if(!$bookingService->isSlotAvailable($this->barber->id, $startAt,$service->duration_minutes)){
+            $next = $bookingService->nextAvailableSlot($this->barber->id,$startAt,$service->duration_minutes);
+
+            $this->suggested_start_at = $next->format('Y-m-d\TH:i');
             $this->addError('start_at', 'This time is already booked. Please choose another slot');
+           
+
             return;
         }
+
 
         $appointment = $bookingService->createPendingAppointment($data,$this->barber->id,$this->idempotency_key);
         $bookingService->createVerification($data['customer_phone']);

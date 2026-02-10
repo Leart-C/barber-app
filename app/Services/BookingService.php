@@ -5,12 +5,14 @@ namespace App\Services;
 use App\Jobs\SendVerificationCode;
 use App\Models\Appointment;
 use App\Models\PhoneVerification;
+use App\Models\Service;
 use Illuminate\Support\Carbon;
 
 class BookingService
 {
     public function createPendingAppointment(array $data, int $barberId, string $idempotencyKey): Appointment
     {
+        $service = Service::findOrFail($data['service_id']);
         return Appointment::firstOrCreate(
             ['idempotency_key' => $idempotencyKey],
             [
@@ -19,6 +21,7 @@ class BookingService
             'customer_name' => $data['customer_name'],
             'customer_phone' => $data['customer_phone'],
             'start_at' => Carbon::parse($data['start_at']),
+            'duration_minutes' => $service->duration_minutes,
             'notes' => $data['notes'] ?? null,
             'status' => 'pending',
         ]);
@@ -50,10 +53,38 @@ class BookingService
         return !Appointment::where('barber_id',$barberId)
             ->whereIn('status',['pending','booked'])
             ->where(function($query) use ($startAt, $endAt){
-                $query->whereBetween('start_at',[$startAt,$endAt])
-                ->orWhereBetween('start_at',[$startAt->copy()->subMinutes(1),$endAt->copy()->subMinutes(1)]);
+                $query->where('start_at','<',$endAt)
+                ->whereRaw("datetime(start_at, '+' || duration_minutes || ' minutes') > ?", [
+                    $startAt->toDateTimeString(),
+                ]);
             })
             ->exists();
     }
+
+    public function nextAvailableSlot(int $barberId, Carbon $startAt, int $durationMinutes): Carbon
+    {
+        $cursor = $startAt->copy();
+
+        while (true) {
+            $endAt = $cursor->copy()->addMinutes($durationMinutes);
+
+            $overlap = Appointment::where('barber_id', $barberId)
+                ->whereIn('status', ['pending', 'booked'])
+                ->where('start_at', '<', $endAt)
+                ->whereRaw("datetime(start_at, '+' || duration_minutes || ' minutes') > ?", [
+                    $cursor->toDateTimeString(),
+                ])
+                ->orderBy('start_at')
+                ->first();
+
+            if (!$overlap) {
+                return $cursor;
+            }
+
+            // Move to the end of the overlapping appointment
+            $cursor = Carbon::parse($overlap->start_at)->addMinutes($overlap->duration_minutes);
+            }
+    }
+
 
 }
