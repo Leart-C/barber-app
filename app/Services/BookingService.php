@@ -50,17 +50,25 @@ class BookingService
         Appointment::where('id', $appointmentId)->update(['status'=>'booked']);
     }
 
-    public function isSlotAvailable(int $barberId, Carbon $startAt, int $durationMinutes): bool
+    public function isSlotAvailable(
+        int $barberId,
+        Carbon $startAt,
+        int $durationMinutes,
+        ?int $excludeAppointmentId = null
+    ): bool
     {
         $endAt = $startAt->copy()->addMinutes($durationMinutes);
 
-        return !Appointment::where('barber_id',$barberId)
-            ->whereIn('status',['pending','booked'])
-            ->where(function($query) use ($startAt, $endAt){
-                $query->where('start_at','<',$endAt)
-                ->whereRaw("datetime(start_at, '+' || duration_minutes || ' minutes') > ?", [
-                    $startAt->toDateTimeString(),
-                ]);
+        return !Appointment::where('barber_id', $barberId)
+            ->whereIn('status', ['pending', 'booked'])
+            ->when($excludeAppointmentId, function ($query) use ($excludeAppointmentId) {
+                $query->where('id', '!=', $excludeAppointmentId);
+            })
+            ->where(function ($query) use ($startAt, $endAt) {
+                $query->where('start_at', '<', $endAt)
+                    ->whereRaw("datetime(start_at, '+' || duration_minutes || ' minutes') > ?", [
+                        $startAt->toDateTimeString(),
+                    ]);
             })
             ->exists();
     }

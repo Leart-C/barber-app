@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Events\AppointmentCanceled;
 use App\Models\Appointment;
 use App\Models\PhoneVerification;
+use App\Services\BookingService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class CancelByPhoneController extends Controller
 {
@@ -82,5 +84,49 @@ class CancelByPhoneController extends Controller
         event(new AppointmentCanceled($appointment));
 
         return back()->with('play_sound',true);
+    }
+
+    public function rescheduleForm(Request $request, Appointment $appointment)
+    {
+        return view('appointments.reschedule',[
+            'appointment'=>$appointment,
+            'phone'=>$request->input('phone'),
+        ]);
+    }
+
+    public function reschedule(Request $request, Appointment $appointment)
+    {
+        $data = $request->validate([
+            'phone' => ['required', 'string', 'max:50'],
+            'start_at' => ['required', 'date'],
+        ]);
+
+        if (now()->gte(Carbon::parse($data['start_at']))) {
+            return back()->withErrors(['start_at' => 'Please choose a future time.'])->withInput();
+        }   
+
+        $bookingService = app(BookingService::class);
+        $service = $appointment->service;
+        $startAt = Carbon::parse($data['start_at']);
+
+       if (!$bookingService->isSlotAvailable(
+            $appointment->barber_id,
+            $startAt,
+            $service->duration_minutes,
+            $appointment->id
+            )) {
+            return back()->withErrors(['start_at' => 'This time is already booked.'])->withInput();
+        }
+
+
+        $appointment->update([
+            'start_at' => $startAt,
+            'duration_minutes' => $service->duration_minutes,
+            'status' => 'booked',
+        ]);
+
+        return redirect()->route('cancel.by.phone.show')
+            ->with('phone', $data['phone'])
+            ->with('message', 'Appointment rescheduled successfully.');
     }
 }

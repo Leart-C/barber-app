@@ -22,7 +22,7 @@
         <form method="POST" action="{{ route('cancel.by.phone.send') }}" class="grid gap-3 mb-4">
             @csrf
             <label class="text-sm">Phone</label>
-            <input type="text" name="phone" value="{{ $phone ?? old('phone') }}"
+            <input type="text" name="phone" value="{{ old('phone', $phone ?? '') }}"
                 class="rounded-lg border border-slate-300 px-3 py-2">
             @error('phone')
                 <div class="text-sm text-red-600">{{ $message }}</div>
@@ -59,6 +59,11 @@
                                 Cancel Appointment
                             </button>
                         </form>
+
+                        <a href="{{ route('cancel.by.phone.reschedule.form', $appointment) }}?phone={{ $phone ?? '' }}"
+                            class="mt-2 block w-full rounded-lg border border-slate-300 px-3 py-2 text-center text-slate-700 hover:bg-slate-50">
+                            Reschedule
+                        </a>
                     </div>
                 @empty
                     <div class="text-sm text-slate-500">No upcoming appointments found.</div>
@@ -66,6 +71,7 @@
             </div>
         @endif
     </div>
+
     @if (session('play_sound'))
         <audio id="notify-sound" src="/sounds/notify.mp3"></audio>
         <script>
@@ -75,7 +81,6 @@
             });
         </script>
     @endif
-
 </body>
 
 </html>

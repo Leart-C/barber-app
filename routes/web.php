@@ -66,5 +66,13 @@ Route::middleware(['auth','admin'])->group(function () {
         return redirect()->route('cancel.by.phone.show');
     });
 
+    Route::get('/cancel-by-phone/{appointment}/reschedule', [CancelByPhoneController::class, 'rescheduleForm'])
+        ->name('cancel.by.phone.reschedule.form');
+    Route::post('/cancel-by-phone/{appointment}/reschedule/save', [CancelByPhoneController::class, 'reschedule'])   
+        ->name('cancel.by.phone.reschedule.save');
+
+
+
+
 
 require __DIR__.'/auth.php';
