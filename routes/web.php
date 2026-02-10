@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AppointmentStatusController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Appointment;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,11 @@ Route::middleware(['auth','admin'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::patch('/admin/appointments/{appointment}/done',[AppointmentStatusController::class,'markDone'])
+        ->name('admin.appointments.done');
+    Route::patch('/admin/appointments/{appointment}/cancel',[AppointmentStatusController::class,'cancel'])
+        ->name('admin.appointments.cancel');
 });
 
 require __DIR__.'/auth.php';
