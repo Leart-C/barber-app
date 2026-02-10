@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AppointmentStatusController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Appointment;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 //Booking
@@ -16,13 +17,26 @@ Route::get('/dashboard', function () {
 
 //Admin access
 Route::middleware(['auth','admin'])->group(function () {
+    Route::get('/admin/appointments',function (Request $request){
+        $query = Appointment::with('service');
+        if($request->filled('status')){
+            $query->where('status',$request->string('status'));
+        }
 
-    Route::get('/admin/appointments',function (){
-        $appointments = Appointment::with('service')
-            ->orderByDesc('created_at')
-            ->get();
-        return view('admin.appointments',compact('appointments'));
-    })->name('admin.appointments');
+        if($request->filled('date')){
+            $query->whereDate('start_at',$request->date('date'));
+        }
+
+        $appointments = $query->orderByDesc('start_at')->get();
+         return view('admin.appointments', [
+            'appointments' => $appointments,
+            'filters' => [
+                'status' => $request->string('status')->toString(),
+                'date' => $request->string('date')->toString(),
+             ],
+            ]);
+        })->name('admin.appointments');
+
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

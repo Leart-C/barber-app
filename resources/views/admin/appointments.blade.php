@@ -23,6 +23,35 @@
             </div>
         @endif
 
+        <form method="GET" action="{{ route('admin.appointments') }}"
+            class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div>
+                <label class="text-sm text-slate-600">Status</label>
+                <select name="status" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+                    <option value="">All</option>
+                    <option value="pending" @selected(($filters['status'] ?? '') === 'pending')>Pending</option>
+                    <option value="booked" @selected(($filters['status'] ?? '') === 'booked')>Booked</option>
+                    <option value="done" @selected(($filters['status'] ?? '') === 'done')>Done</option>
+                    <option value="canceled" @selected(($filters['status'] ?? '') === 'canceled')>Canceled</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-sm text-slate-600">Date</label>
+                <input type="date" name="date" value="{{ $filters['date'] ?? '' }}"
+                    class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+            </div>
+
+            <div class="flex items-end gap-2">
+                <button class="w-full rounded-lg bg-slate-900 px-3 py-2 text-white hover:bg-slate-800">Filter</button>
+                <a href="{{ route('admin.appointments') }}"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-center">
+                    Reset
+                </a>
+            </div>
+        </form>
+
+
         <div class="space-y-4">
             @forelse ($appointments as $appointment)
                 <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
