@@ -3,7 +3,7 @@
         <div
             class="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
             @forelse ($appointments as $appointment)
-                <div
+                <div wire:key="appointment-{{ $appointment->id }}"
                     class="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
                     <div class="flex items-center justify-between">
                         <div>
@@ -64,22 +64,59 @@
                         Details
                     </button>
 
-                    <dialog id="details-{{ $appointment->id }}" class="rounded-2xl border border-[var(--line)] p-0"
+                    <dialog wire:ignore.self id="details-{{ $appointment->id }}"
+                        class="rounded-2xl border border-[var(--line)] p-0"
                         onclick="if (event.target === this) this.close();">
-                        <div class="w-[90vw] max-w-md bg-[var(--card)] p-5">
-                            <h2 class="text-lg font-semibold mb-2">Appointment Details</h2>
-                            <p><strong>Name:</strong> {{ $appointment->customer_name }}</p>
-                            <p><strong>Phone:</strong> {{ $appointment->customer_phone }}</p>
-                            <p><strong>Service:</strong> {{ $appointment->service->name ?? '-' }}</p>
-                            <p><strong>Time:</strong> {{ $appointment->start_at->format('Y-m-d H:i') }}</p>
-                            <p><strong>Status:</strong> {{ ucfirst($appointment->status) }}</p>
-                            <p><strong>Notes:</strong> {{ $appointment->notes ?? '—' }}</p>
+                        <div class="w-[90vw] max-w-md bg-[var(--card)] p-6">
+                            <div class="mb-4 flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Appointment</p>
+                                    <h2 class="mt-1 text-lg font-semibold">Details</h2>
+                                </div>
+                                <span
+                                    class="rounded-full px-2 py-1 text-xs font-medium
+                @if ($appointment->status === 'booked') bg-blue-100 text-blue-700
+                @elseif ($appointment->status === 'pending') bg-amber-100 text-amber-700
+                @elseif ($appointment->status === 'done') bg-emerald-100 text-emerald-700
+                @elseif ($appointment->status === 'canceled') bg-rose-100 text-rose-700
+                @else bg-slate-100 text-slate-700 @endif">
+                                    {{ ucfirst($appointment->status) }}
+                                </span>
+                            </div>
 
-                            <form method="dialog" class="mt-4">
-                                <button class="rounded-xl bg-[var(--accent)] px-3 py-2 text-white">Close</button>
+                            <div class="space-y-3 text-sm">
+                                <div class="rounded-xl border border-[var(--line)] bg-[var(--accent-soft)] p-3">
+                                    <p class="text-[var(--muted)] text-xs">Time</p>
+                                    <p class="font-medium">{{ $appointment->start_at->format('Y-m-d H:i') }}</p>
+                                </div>
+
+                                <div class="grid gap-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-[var(--muted)]">Customer</span>
+                                        <span class="font-medium">{{ $appointment->customer_name }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-[var(--muted)]">Phone</span>
+                                        <span class="font-medium">{{ $appointment->customer_phone }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-[var(--muted)]">Service</span>
+                                        <span class="font-medium">{{ $appointment->service->name ?? '-' }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="rounded-xl border border-[var(--line)] p-3">
+                                    <p class="text-[var(--muted)] text-xs">Notes</p>
+                                    <p class="mt-1">{{ $appointment->notes ?? '—' }}</p>
+                                </div>
+                            </div>
+
+                            <form method="dialog" class="mt-5">
+                                <button class="w-full rounded-xl bg-[var(--accent)] px-3 py-2 text-white">Close</button>
                             </form>
                         </div>
                     </dialog>
+
                 </div>
             @empty
                 <div
