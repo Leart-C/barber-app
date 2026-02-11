@@ -11,6 +11,9 @@ class AdminAppointmentsList extends Component
     public $initialized = false;
     public $filters = ['status'=>'','date'=>''];
 
+    public $lastSeenId = null;
+    public $flashId = null;
+
     public function mount($filters = []):void
     {
         $this->filters = $filters + ['status'=>'','date'=>''];
@@ -30,13 +33,14 @@ class AdminAppointmentsList extends Component
 
         $appointments = $query->orderByDesc('created_at')->get();
 
-        $count = $appointments->count();
+        $latestId = $appointments->first()?->id;
 
-        if($this->initialized && $count > $this->lastCount){
-            $this->dispatch('new-appointment');
+        if ($this->initialized && $latestId && $this->lastSeenId && $latestId !== $this->lastSeenId) {
+            $this->flashId = $latestId;
+            $this->dispatch('new-appointment', id: $latestId);
         }
 
-        $this->lastCount = $count;
+        $this->lastSeenId = $latestId;
         $this->initialized = true;
 
         return view('livewire.admin-appointments-list',compact('appointments'));

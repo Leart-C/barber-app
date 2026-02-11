@@ -10,25 +10,25 @@
     @livewireStyles
 </head>
 
-<body class="min-h-screen bg-slate-50 text-slate-900">
-    <div class="mx-auto w-full max-w-xl px-4 py-8">
+<body class="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
+    <div class="mx-auto w-full max-w-xl px-5 py-10">
         <div class="mb-6 text-center">
-            <p class="text-xs uppercase tracking-widest text-slate-500">Admin</p>
-            <h1 class="mt-2 text-2xl font-semibold">Appointments</h1>
-            <p class="mt-1 text-sm text-slate-600">Manage bookings quickly on mobile.</p>
+            <p class="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Admin</p>
+            <h1 class="mt-3 text-2xl font-semibold">Appointments</h1>
+            <p class="mt-2 text-sm text-[var(--muted)]">Live updates, clean and fast.</p>
         </div>
 
         @if (session('message'))
-            <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
+            <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
                 {{ session('message') }}
             </div>
         @endif
 
         <form method="GET" action="{{ route('admin.appointments') }}"
-            class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div>
-                <label class="text-sm text-slate-600">Status</label>
-                <select name="status" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+                <label class="text-sm text-[var(--muted)]">Status</label>
+                <select name="status" class="mt-1 w-full rounded-xl border border-[var(--line)] px-3 py-2">
                     <option value="">All</option>
                     <option value="pending" @selected(($filters['status'] ?? '') === 'pending')>Pending</option>
                     <option value="booked" @selected(($filters['status'] ?? '') === 'booked')>Booked</option>
@@ -38,15 +38,16 @@
             </div>
 
             <div>
-                <label class="text-sm text-slate-600">Date</label>
+                <label class="text-sm text-[var(--muted)]">Date</label>
                 <input type="date" name="date" value="{{ $filters['date'] ?? '' }}"
-                    class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+                    class="mt-1 w-full rounded-xl border border-[var(--line)] px-3 py-2">
             </div>
 
             <div class="flex items-end gap-2">
-                <button class="w-full rounded-lg bg-slate-900 px-3 py-2 text-white hover:bg-slate-800">Filter</button>
+                <button
+                    class="w-full rounded-xl bg-[var(--accent)] px-3 py-2 text-white hover:opacity-90">Filter</button>
                 <a href="{{ route('admin.appointments') }}"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-center">
+                    class="w-full rounded-xl border border-[var(--line)] px-3 py-2 text-center">
                     Reset
                 </a>
             </div>
@@ -57,15 +58,27 @@
 
     <audio id="notify-sound" src="/sounds/notify.mp3"></audio>
 
+    <div id="toast"
+        class="fixed left-1/2 top-6 z-50 hidden -translate-x-1/2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow">
+        New appointment booked
+    </div>
+
     @livewireScripts
     <script>
         document.addEventListener('livewire:init', () => {
             Livewire.on('new-appointment', () => {
                 const audio = document.getElementById('notify-sound');
                 if (audio) audio.play().catch(() => {});
+
+                const toast = document.getElementById('toast');
+                if (!toast) return;
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 3000);
             });
         });
     </script>
+
+
 </body>
 
 </html>
