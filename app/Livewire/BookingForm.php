@@ -32,8 +32,6 @@ class BookingForm extends Component
 
     public $suggested_start_at;
 
-    
-
 
     public function mount(): void
     {
@@ -56,33 +54,55 @@ class BookingForm extends Component
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        if(now()->gte(Carbon::parse($data['start_at']))){
-            $this->addError('start_at','Please choose a future time.');
+        Appointment::where('status', 'pending')
+            ->where('created_at', '<', now()->subMinutes(10))
+            ->update(['status' => 'canceled']);
+
+        $startAt = Carbon::parse($data['start_at']);
+
+        if (now()->gte($startAt)) {
+            $this->addError('start_at', 'Please choose a future time.');
+            return;
+        }
+
+        $open = $startAt->copy()->setTime(9, 0);
+        $close = $startAt->copy()->setTime(20, 0);
+
+        if ($startAt->lt($open) || $startAt->gte($close)) {
+            $next = $startAt->copy()->addDay()->setTime(9, 0);
+            $this->suggested_start_at = $next->format('Y-m-d\TH:i');
+            $this->addError('start_at', 'We are open from 09:00 to 20:00. Please choose a time in working hours.');
+            return;
+        }
+
+        $dailyCount = Appointment::where('customer_phone', $data['customer_phone'])
+            ->whereDate('start_at', $startAt->toDateString())
+            ->whereIn('status', ['pending', 'booked'])
+            ->count();
+
+        if ($dailyCount >= 1) {
+            $this->addError('customer_phone', 'You already have a booking for this day.');
             return;
         }
 
         $service = Service::find($data['service_id']);
         $bookingService = app(BookingService::class);
-        $startAt = Carbon::parse($data['start_at']);
 
-        if(!$bookingService->isSlotAvailable($this->barber->id, $startAt,$service->duration_minutes)){
-            $next = $bookingService->nextAvailableSlot($this->barber->id,$startAt,$service->duration_minutes);
+        if (!$bookingService->isSlotAvailable($this->barber->id, $startAt, $service->duration_minutes)) {
+            $next = $bookingService->nextAvailableSlot($this->barber->id, $startAt, $service->duration_minutes);
 
             $this->suggested_start_at = $next->format('Y-m-d\TH:i');
             $this->addError('start_at', 'This time is already booked. Please choose another slot');
-           
-
             return;
         }
 
-
-        $appointment = $bookingService->createPendingAppointment($data,$this->barber->id,$this->idempotency_key);
+        $appointment = $bookingService->createPendingAppointment($data, $this->barber->id, $this->idempotency_key);
         $bookingService->createVerification($data['customer_phone']);
 
         $this->pending_appointment_id = $appointment->id;
         $this->step = 'verify';
-
     }
+
 
     public function verify():void
     {
@@ -104,7 +124,30 @@ class BookingForm extends Component
 
         $verification->update(['verified_at'=>now()]);
 
+        $appointment = Appointment::findOrFail($this->pending_appointment_id);
+
         $bookingService = app(BookingService::class);
+
+        if(!$bookingService->isSlotAvailable(
+            $appointment->barber_id,
+            Carbon::parse($appointment->start_at),
+            $appointment->duration_minutes,
+            $appointment->id
+        )){
+            $appointment->update(['status'=>'canceled']);
+
+            $next = $bookingService->nextAvailableSlot(
+                $appointment->barber_id,
+                Carbon::parse($appointment->start_at),
+                $appointment->duration_minutes
+            );
+
+            $this->suggested_start_at = $next->format('Y-m-d\TH:i');
+            $this->addError('start_at','Sorry, someone else booked this slot. Please choose another time');
+            $this->step = 'form';
+
+            return;
+        }
 
         $bookingService->confirmAppointment($this->pending_appointment_id);
 
