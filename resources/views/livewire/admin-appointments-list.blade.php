@@ -1,0 +1,90 @@
+<?php
+
+use Livewire\Component;
+
+new class extends Component {
+    //
+};
+?>
+
+<div wire:poll.5s>
+    <div class="space-y-4">
+        @forelse ($appointments as $appointment)
+            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-slate-500">Date & Time</p>
+                        <p class="text-base font-medium">{{ $appointment->start_at->format('Y-m-d H:i') }}</p>
+                    </div>
+                    <span
+                        class="rounded-full px-2 py-1 text-xs font-medium
+                        @if ($appointment->status === 'booked') bg-blue-100 text-blue-700
+                        @elseif ($appointment->status === 'pending') bg-amber-100 text-amber-700
+                        @elseif ($appointment->status === 'done') bg-emerald-100 text-emerald-700
+                        @elseif ($appointment->status === 'canceled') bg-red-100 text-red-700
+                        @else bg-slate-100 text-slate-700 @endif">
+                        {{ ucfirst($appointment->status) }}
+                    </span>
+                </div>
+
+                <div class="mt-3 grid gap-1 text-sm">
+                    <p><span class="text-slate-500">Customer:</span> {{ $appointment->customer_name }}</p>
+                    <p><span class="text-slate-500">Phone:</span> {{ $appointment->customer_phone }}</p>
+                    <p><span class="text-slate-500">Service:</span> {{ $appointment->service->name ?? '-' }}</p>
+                </div>
+
+                <div class="mt-4 flex gap-2">
+                    @if (in_array($appointment->status, ['pending', 'booked']))
+                        <form method="POST" action="{{ route('admin.appointments.done', $appointment) }}"
+                            class="flex-1">
+                            @csrf
+                            @method('PATCH')
+                            <button
+                                class="w-full rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-700 hover:bg-emerald-100">
+                                Done
+                            </button>
+                        </form>
+                    @endif
+
+                    @if ($appointment->status !== 'canceled')
+                        <form method="POST" action="{{ route('admin.appointments.cancel', $appointment) }}"
+                            class="flex-1">
+                            @csrf
+                            @method('PATCH')
+                            <button
+                                class="w-full rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700 hover:bg-rose-100">
+                                Cancel
+                            </button>
+                        </form>
+                    @endif
+                </div>
+
+                <button type="button" onclick="document.getElementById('details-{{ $appointment->id }}').showModal()"
+                    class="mt-3 rounded-lg border border-slate-300 px-3 py-2 text-slate-700 hover:bg-slate-50">
+                    Details
+                </button>
+
+                <dialog id="details-{{ $appointment->id }}" class="rounded-xl border border-slate-200 p-0"
+                    onclick="if (event.target === this) this.close();">
+                    <div class="w-[90vw] max-w-md bg-white p-5">
+                        <h2 class="text-lg font-semibold mb-2">Appointment Details</h2>
+                        <p><strong>Name:</strong> {{ $appointment->customer_name }}</p>
+                        <p><strong>Phone:</strong> {{ $appointment->customer_phone }}</p>
+                        <p><strong>Service:</strong> {{ $appointment->service->name ?? '-' }}</p>
+                        <p><strong>Time:</strong> {{ $appointment->start_at->format('Y-m-d H:i') }}</p>
+                        <p><strong>Status:</strong> {{ ucfirst($appointment->status) }}</p>
+                        <p><strong>Notes:</strong> {{ $appointment->notes ?? '—' }}</p>
+
+                        <form method="dialog" class="mt-4">
+                            <button class="rounded-lg bg-slate-900 px-3 py-2 text-white">Close</button>
+                        </form>
+                    </div>
+                </dialog>
+            </div>
+        @empty
+            <div class="rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-500">
+                No appointments yet.
+            </div>
+        @endforelse
+    </div>
+</div>
