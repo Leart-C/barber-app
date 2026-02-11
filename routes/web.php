@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AppointmentStatusController;
 use App\Http\Controllers\Admin\CustomerAuditController;
+use App\Http\Controllers\Admin\TodayDashboardController;
 use App\Http\Controllers\AppointmentCancelController;
 use App\Http\Controllers\CancelByPhoneController;
 use App\Http\Controllers\ProfileController;
@@ -52,6 +53,9 @@ Route::middleware(['auth','admin'])->group(function () {
     
    Route::get('/admin/customers',[CustomerAuditController::class,'index'])->name('admin.customers.index');
    Route::get('/admin/customers/{phone}',[CustomerAuditController::class,'show'])->name('admin.customers.show');
+
+   Route::get('/admin/today',[TodayDashboardController::class,'index'])
+        ->name('admin.today');
 });
     
     // Cancel by token (public)

@@ -16,6 +16,14 @@
     <meta name="apple-mobile-web-app-title" content="Barber">
 
 </head>
+<div class="mt-4 flex justify-center">
+    <a href="{{ route('admin.today') }}"
+        class="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--card)] px-4 py-2 text-sm text-[var(--ink)] shadow-sm hover:bg-[var(--accent-soft)]">
+        <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+        Today Dashboard
+    </a>
+</div>
+
 
 <body class="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
     <div class="mx-auto w-full max-w-xl px-5 py-10">
