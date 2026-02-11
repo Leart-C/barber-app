@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AppointmentStatusController;
+use App\Http\Controllers\Admin\CustomerAuditController;
 use App\Http\Controllers\AppointmentCancelController;
 use App\Http\Controllers\CancelByPhoneController;
 use App\Http\Controllers\ProfileController;
@@ -29,7 +30,7 @@ Route::middleware(['auth','admin'])->group(function () {
             $query->whereDate('start_at',$request->date('date'));
         }
 
-        $appointments = $query->orderByDesc('start_at')->get();
+        $appointments = $query->orderByDesc('created_at')->get();
          return view('admin.appointments', [
             'appointments' => $appointments,
             'filters' => [
@@ -48,7 +49,10 @@ Route::middleware(['auth','admin'])->group(function () {
         ->name('admin.appointments.done');
     Route::patch('/admin/appointments/{appointment}/cancel',[AppointmentStatusController::class,'cancel'])
         ->name('admin.appointments.cancel');
-    });
+    
+   Route::get('/admin/customers',[CustomerAuditController::class,'index'])->name('admin.customers.index');
+   Route::get('/admin/customers/{phone}',[CustomerAuditController::class,'show'])->name('admin.customers.show');
+});
     
     // Cancel by token (public)
     Route::get('/cancel/{token}',[AppointmentCancelController::class,'show'])

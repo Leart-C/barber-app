@@ -108,6 +108,29 @@
                             <div class="flex-1 text-center text-xs text-slate-500">No actions</div>
                         @endif
                     </div>
+                    <button type="button"
+                        onclick="document.getElementById('details-{{ $appointment->id }}').showModal()"
+                        class="mt-3 rounded-lg border border-slate-300 px-3 py-2 text-slate-700 hover:bg-slate-50">
+                        Details
+                    </button>
+
+                    <dialog id="details-{{ $appointment->id }}" class="rounded-xl border border-slate-200 p-0"
+                        onclick="if (event.target === this) this.close();">
+                        <div class="w-[90vw] max-w-md bg-white p-5">
+                            <h2 class="text-lg font-semibold mb-2">Appointment Details</h2>
+                            <p><strong>Name:</strong> {{ $appointment->customer_name }}</p>
+                            <p><strong>Phone:</strong> {{ $appointment->customer_phone }}</p>
+                            <p><strong>Service:</strong> {{ $appointment->service->name ?? '-' }}</p>
+                            <p><strong>Time:</strong> {{ $appointment->start_at->format('Y-m-d H:i') }}</p>
+                            <p><strong>Status:</strong> {{ ucfirst($appointment->status) }}</p>
+                            <p><strong>Notes:</strong> {{ $appointment->notes ?? '—' }}</p>
+
+                            <form method="dialog" class="mt-4">
+                                <button class="rounded-lg bg-slate-900 px-3 py-2 text-white">Close</button>
+                            </form>
+                        </div>
+                    </dialog>
+
 
                 </div>
             @empty
