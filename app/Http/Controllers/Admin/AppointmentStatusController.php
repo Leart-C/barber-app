@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\AppointmentCanceled;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use Illuminate\Http\RedirectResponse;
@@ -17,8 +18,10 @@ class AppointmentStatusController extends Controller
 
     public function cancel(Appointment $appointment): RedirectResponse
     {
-        $appointment->update(['status'=>'canceled']);
+        $appointment->update(['status'=>'canceled','canceled_at' => now()]);
 
+        event(new AppointmentCanceled($appointment));
+        
         return back()->with('message','Appointment canceled');
     }
 }

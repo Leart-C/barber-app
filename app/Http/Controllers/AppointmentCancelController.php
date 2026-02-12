@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\AppointmentCanceled;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
 
@@ -18,7 +19,9 @@ class AppointmentCancelController extends Controller
     {
         $appointment = Appointment::where('cancel_token',$token)->firstOrFail();
 
-        $appointment->update(['status'=>'canceled']);
+        $appointment->update(['status'=>'canceled','canceled_at' => now()]);
+
+        event(new AppointmentCanceled($appointment));
 
         return redirect('/')->with('message','Your appointment was canceled');
     }
