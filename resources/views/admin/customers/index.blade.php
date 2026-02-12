@@ -10,7 +10,14 @@
 
 <body class="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
     <div class="mx-auto max-w-4xl px-6 py-10">
-        <h1 class="text-2xl font-semibold mb-6">Customer Audit</h1>
+        <div class="mb-6 flex items-center justify-between">
+            <h1 class="text-2xl font-semibold">Customer Audit</h1>
+
+            <a href="{{ route('admin.index') }}"
+                class="inline-flex items-center rounded-full border border-[var(--line)] bg-[var(--card)] px-4 py-2 text-sm text-[var(--ink)] shadow-sm hover:bg-[var(--accent-soft)]">
+                Admin Home
+            </a>
+        </div>
 
         <div class="space-y-3">
             @forelse ($customers as $customer)

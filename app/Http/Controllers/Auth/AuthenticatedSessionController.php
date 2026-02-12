@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
+
+
 class AuthenticatedSessionController extends Controller
 {
     /**
@@ -27,6 +29,10 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        if (Auth::user()?->is_admin) {
+            return redirect()->intended(route('admin.index'));
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
