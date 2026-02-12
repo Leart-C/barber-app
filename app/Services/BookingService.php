@@ -6,6 +6,7 @@ use App\Jobs\SendVerificationCode;
 use App\Models\Appointment;
 use App\Models\PhoneVerification;
 use App\Models\Service;
+use App\Models\Unavailability;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -59,6 +60,14 @@ class BookingService
     {
         $endAt = $startAt->copy()->addMinutes($durationMinutes);
 
+        $overlapUnavailable = Unavailability::where('start_at', '<', $endAt)
+            ->where('end_at', '>', $startAt)
+            ->exists();
+
+        if ($overlapUnavailable) {
+            return false;
+        }       
+
         return !Appointment::where('barber_id', $barberId)
             ->whereIn('status', ['pending', 'booked'])
             ->when($excludeAppointmentId, function ($query) use ($excludeAppointmentId) {
@@ -80,6 +89,16 @@ class BookingService
         while (true) {
             $endAt = $cursor->copy()->addMinutes($durationMinutes);
 
+             $unavailable = Unavailability::where('start_at', '<', $endAt)
+                ->where('end_at', '>', $cursor)
+                ->orderBy('end_at')
+                ->first();
+
+            if ($unavailable) {
+                $cursor = Carbon::parse($unavailable->end_at);
+                continue;
+            }
+
             $overlap = Appointment::where('barber_id', $barberId)
                 ->whereIn('status', ['pending', 'booked'])
                 ->where('start_at', '<', $endAt)
@@ -95,10 +114,6 @@ class BookingService
 
             // Move to the end of the overlapping appointment
             $cursor = Carbon::parse($overlap->start_at)->addMinutes($overlap->duration_minutes);
-            }
+        }
     }
-
-    
-
-
 }
