@@ -3,12 +3,16 @@
 namespace App\Services;
 
 use App\Jobs\SendVerificationCode;
+use App\Mail\VerificationCodeMail;
 use App\Models\Appointment;
 use App\Models\PhoneVerification;
 use App\Models\Service;
 use App\Models\Unavailability;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+
+
 
 class BookingService
 {
@@ -27,11 +31,11 @@ class BookingService
             'notes' => $data['notes'] ?? null,
             'status' => 'pending',
             'cancel_token' => (string) Str::uuid(),
-
+            'customer_email' => $data['customer_email'],
         ]);
     }
 
-    public function createVerification(string $phone): PhoneVerification
+    public function createVerification(string $phone, string $email): PhoneVerification
     {
         $code = (string) random_int(100000, 999999);
 
@@ -39,12 +43,13 @@ class BookingService
             'phone' => $phone,
             'code' => $code,
             'expires_at' => now()->addMinutes(10),
-            'cancel_token' => (string) Str::uuid(),
         ]);
 
-        SendVerificationCode::dispatch($phone,$code);
+        Mail::to($email)->send(new VerificationCodeMail($code));
+
         return $verification;
     }
+
 
     public function confirmAppointment(int $appointmentId):void
     {

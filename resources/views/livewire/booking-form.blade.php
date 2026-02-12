@@ -28,6 +28,15 @@
             </label>
 
             <label class="grid gap-1 text-sm font-medium">
+                Email
+                <input type="email" wire:model="customer_email"
+                    class="rounded-xl border border-[var(--line)] px-3 py-2">
+                @error('customer_email')
+                    <div class="text-sm text-red-600">{{ $message }}</div>
+                @enderror
+            </label>
+
+            <label class="grid gap-1 text-sm font-medium">
                 Phone
                 <div class="flex gap-2">
                     <select wire:model="country_code" class="w-30 rounded-xl border border-[var(--line)] px-2 py-2">

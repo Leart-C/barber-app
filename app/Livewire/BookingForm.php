@@ -39,6 +39,8 @@ class BookingForm extends Component
     public $country_code = '+383';
     public $phone_local;
 
+    public $customer_email;
+
     public function mount(): void
     {
         $this->services = Service::orderBy('name')->get();
@@ -64,6 +66,8 @@ class BookingForm extends Component
                 'selected_date' => ['required', 'date'],
                 'selected_slot' => ['required', 'string'],
                 'notes' => ['nullable', 'string', 'max:1000'],
+                'customer_email' => ['required', 'email', 'max:255'],
+
             ],
             [
                 'phone_local.regex' => 'Kosovo numbers must start with 44, 45, or 48 (e.g. 44123123).',
@@ -72,6 +76,8 @@ class BookingForm extends Component
 
         $data['customer_phone'] = $this->country_code . $this->phone_local;
         $this->customer_phone = $data['customer_phone'];
+
+        $data['customer_email'] = $this->customer_email;
 
         Appointment::where('status', 'pending')
             ->where('created_at', '<', now()->subMinutes(10))
@@ -119,7 +125,7 @@ class BookingForm extends Component
         $data['start_at'] = $startAt->toDateTimeString();
         $appointment = $bookingService->createPendingAppointment($data, $this->barber->id, $this->idempotency_key);
         
-        $bookingService->createVerification($data['customer_phone']);
+        $bookingService->createVerification($data['customer_phone'],$data['customer_email']);
 
         $this->pending_appointment_id = $appointment->id;
         $this->step = 'verify';
@@ -177,7 +183,7 @@ class BookingForm extends Component
         
         event(new AppointmentBooked($appointment));
         
-        $this->reset(['customer_name', 'customer_phone', 'start_at', 'notes', 'verification_code', 'pending_appointment_id']);
+        $this->reset(['customer_name', 'customer_phone','customer_email', 'start_at', 'notes', 'verification_code', 'pending_appointment_id']);
         $this->suggested_start_at = null;
         $this->idempotency_key = (string) Str::uuid();
         $this->step = 'form';
