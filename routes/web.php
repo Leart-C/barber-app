@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\Admin\AppointmentStatusController;
 use App\Http\Controllers\Admin\CustomerAuditController;
+use App\Http\Controllers\Admin\RevenueController;
+use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\TodayDashboardController;
+use App\Http\Controllers\Admin\UnavailabilityController;
 use App\Http\Controllers\AppointmentCancelController;
 use App\Http\Controllers\CancelByPhoneController;
 use App\Http\Controllers\ProfileController;
@@ -13,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 //Booking
 Route::get('/', function () {
     return view('booking');
-});
+})->name('booking');
 //Dashboard
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -51,11 +54,42 @@ Route::middleware(['auth','admin'])->group(function () {
     Route::patch('/admin/appointments/{appointment}/cancel',[AppointmentStatusController::class,'cancel'])
         ->name('admin.appointments.cancel');
     
-   Route::get('/admin/customers',[CustomerAuditController::class,'index'])->name('admin.customers.index');
-   Route::get('/admin/customers/{phone}',[CustomerAuditController::class,'show'])->name('admin.customers.show');
+    Route::get('/admin/customers',[CustomerAuditController::class,'index'])->name('admin.customers.index');
+    Route::get('/admin/customers/{phone}',[CustomerAuditController::class,'show'])->name('admin.customers.show');
 
-   Route::get('/admin/today',[TodayDashboardController::class,'index'])
+    Route::get('/admin/today',[TodayDashboardController::class,'index'])
         ->name('admin.today');
+
+    Route::get('/admin/unavailable',[UnavailabilityController::class,'index'])
+        ->name('admin.unavailable');
+    
+    Route::post('/admin/unavailable',[UnavailabilityController::class,'store'])
+        ->name('admin.unavailable.store');
+    
+    Route::get('/admin', function () {
+        return view('admin.index');
+        })->name('admin.index');
+
+    Route::get('/admin/services', [ServiceController::class, 'index'])
+        ->name('admin.services.index');
+
+    Route::post('/admin/services', [ServiceController::class, 'store'])
+        ->name('admin.services.store');
+
+    Route::patch('/admin/services/{service}', [ServiceController::class, 'update'])
+        ->name('admin.services.update');
+
+    Route::delete('/admin/services/{service}', [ServiceController::class, 'destroy'])
+        ->name('admin.services.destroy');
+
+    Route::get('/admin/revenue',[RevenueController::class,'index'])
+        ->name('admin.revenue');
+
+    Route::post('/admin/revenue/rent',[RevenueController::class,'updateRent'])
+        ->name('admin.revenue.rent');
+
+    Route::post('/admin/revenue/close-month', [RevenueController::class,'closeMonth'])
+        ->name('admin.revenue.close');
 });
     
     // Cancel by token (public)

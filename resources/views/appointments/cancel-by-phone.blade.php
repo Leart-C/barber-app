@@ -7,6 +7,12 @@
     <title>Manage Appointment</title>
     @vite('resources/css/app.css')
 </head>
+<div class="mt-4 flex justify-center">
+    <a href="{{ route('booking') }}"
+        class="inline-flex items-center rounded-full border border-[var(--line)] bg-[var(--card)] px-4 py-2 text-sm text-[var(--ink)] shadow-sm hover:bg-[var(--accent-soft)]">
+        Booking
+    </a>
+</div>
 
 <body class="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
     <div class="mx-auto w-full max-w-lg px-5 py-10">

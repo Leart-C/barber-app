@@ -15,19 +15,18 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Barber">
-
 </head>
 
 <body class="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
-    <div class="mx-auto w-full max-w-lg px-5 py-10">
+    <div class="mx-auto w-full max-w-lg px-4 py-8 sm:py-12">
         <div class="mb-6 text-center">
             <p class="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Barber Booking</p>
             <h1 class="mt-3 text-3xl font-semibold">Book an Appointment</h1>
-            <p class="mt-2 text-sm text-[var(--muted)]">Fast, simple, and confirmed by phone.</p>
+            <p class="mt-2 text-sm text-[var(--muted)]">Fast, simple, and confirmed by email.</p>
         </div>
 
         <div
-            class="rounded-3xl border border-[var(--line)] bg-[var(--card)] p-5 shadow-[0_12px_40px_rgba(15,23,42,0.08)]">
+            class="rounded-3xl border border-[var(--line)] bg-[var(--card)] p-5 sm:p-7 shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
             @livewire('booking-form')
         </div>
 

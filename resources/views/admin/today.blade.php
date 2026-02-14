@@ -16,7 +16,8 @@
                 <h1 class="mt-2 text-2xl font-semibold">Today</h1>
                 <p class="mt-1 text-sm text-[var(--muted)]">Overview of today’s appointments.</p>
             </div>
-            <a href="{{ route('admin.appointments') }}" class="text-sm underline text-[var(--muted)]">
+            <a href="{{ route('admin.appointments') }}"
+                class="inline-flex items-center rounded-full border border-[var(--line)] bg-[var(--card)] px-4 py-2 text-sm text-[var(--ink)] shadow-sm hover:bg-[var(--accent-soft)]">
                 All appointments
             </a>
         </div>

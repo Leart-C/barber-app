@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\AppointmentCanceled;
+use App\Events\AppointmentRescheduled;
 use App\Models\Appointment;
 use App\Models\PhoneVerification;
 use App\Services\BookingService;
@@ -18,9 +19,14 @@ class CancelByPhoneController extends Controller
 
     public function sendCode(Request $request)
     {
-        $data = $request->validate([
-            'phone' => ['required', 'string', 'max:50'],
-        ]);
+        $data = $request->validate(
+            [
+                'phone' => ['required', 'string', 'regex:/^\+383(44|45|48)\d{6,8}$/'],
+            ],
+            [
+                'phone.regex' => 'Enter a valid Kosovo number like +38344123123.',
+            ],
+        );
 
         $code = (string) random_int(100000, 999999);
 
@@ -55,7 +61,7 @@ class CancelByPhoneController extends Controller
             ->latest()
             ->first();
         
-         if (!$verification) {
+        if (!$verification) {
             return back()
             ->withErrors(['code' => 'Invalid or expired code.'])
             ->with('phone', $data['phone'])
@@ -79,11 +85,14 @@ class CancelByPhoneController extends Controller
 
     public function cancel(Request $request, Appointment $appointment)
     {
-        $appointment->update(['status'=>'canceled']);
+        $appointment->update([
+            'status' => 'canceled',
+            'canceled_at' => now(),
+        ]);
 
         event(new AppointmentCanceled($appointment));
 
-        return back()->with('play_sound',true);
+        return back()->with('play_sound', true)->with('message', 'Appointment canceled.');
     }
 
     public function rescheduleForm(Request $request, Appointment $appointment)
@@ -94,39 +103,43 @@ class CancelByPhoneController extends Controller
         ]);
     }
 
-    public function reschedule(Request $request, Appointment $appointment)
-    {
-        $data = $request->validate([
-            'phone' => ['required', 'string', 'max:50'],
-            'start_at' => ['required', 'date'],
-        ]);
+   public function reschedule(Request $request, Appointment $appointment)
+{
+    $data = $request->validate([
+        'phone' => ['required', 'string', 'max:50'],
+        'start_at' => ['required', 'date'],
+    ]);
 
-        if (now()->gte(Carbon::parse($data['start_at']))) {
-            return back()->withErrors(['start_at' => 'Please choose a future time.'])->withInput();
-        }   
+    $startAt = Carbon::parse($data['start_at']); 
 
-        $bookingService = app(BookingService::class);
-        $service = $appointment->service;
-        $startAt = Carbon::parse($data['start_at']);
-
-       if (!$bookingService->isSlotAvailable(
-            $appointment->barber_id,
-            $startAt,
-            $service->duration_minutes,
-            $appointment->id
-            )) {
-            return back()->withErrors(['start_at' => 'This time is already booked.'])->withInput();
-        }
-
-
-        $appointment->update([
-            'start_at' => $startAt,
-            'duration_minutes' => $service->duration_minutes,
-            'status' => 'booked',
-        ]);
-
-        return redirect()->route('cancel.by.phone.show')
-            ->with('phone', $data['phone'])
-            ->with('message', 'Appointment rescheduled successfully.');
+    if (now()->gte($startAt)) {
+        return back()->withErrors(['start_at' => 'Please choose a future time.'])->withInput();
     }
+
+    $bookingService = app(BookingService::class);
+    $service = $appointment->service;
+
+    if (!$bookingService->isSlotAvailable(
+        $appointment->barber_id,
+        $startAt,
+        $service->duration_minutes,
+        $appointment->id
+    )) {
+        return back()->withErrors(['start_at' => 'This time is already booked.'])->withInput();
+    }
+
+    $appointment->update([
+        'start_at' => $startAt,
+        'duration_minutes' => $service->duration_minutes,
+        'status' => 'booked',
+        'rescheduled_at' => now(),
+    ]);
+
+    event(new AppointmentRescheduled($appointment));
+
+    return redirect()->route('cancel.by.phone.show')
+        ->with('phone', $data['phone'])
+        ->with('message', 'Appointment rescheduled successfully.');
+}
+
 }

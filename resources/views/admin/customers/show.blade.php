@@ -10,10 +10,17 @@
 
 <body class="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
     <div class="mx-auto max-w-4xl px-6 py-10">
-        <a href="{{ route('admin.customers.index') }}" class="text-sm text-[var(--muted)] underline">Back</a>
+        <div class="mb-4 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-semibold">{{ $customerName }}</h1>
+                <p class="text-[var(--muted)]">{{ $phone }}</p>
+            </div>
 
-        <h1 class="text-2xl font-semibold mt-2">{{ $customerName }}</h1>
-        <p class="text-[var(--muted)] mb-6">{{ $phone }}</p>
+            <a href="{{ route('admin.customers.index') }}"
+                class="inline-flex items-center rounded-full border border-[var(--line)] bg-[var(--card)] px-4 py-2 text-sm text-[var(--ink)] shadow-sm hover:bg-[var(--accent-soft)]">
+                Back
+            </a>
+        </div>
 
         <div class="space-y-3">
             @forelse ($appointments as $appointment)

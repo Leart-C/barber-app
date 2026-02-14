@@ -32,33 +32,59 @@ class BookingForm extends Component
 
     public $suggested_start_at;
 
+    public $selected_date;
+    public $selected_slot;
+    public $available_slots = [];
+
+    public $country_code = '+383';
+    public $phone_local;
+
+    public $customer_email;
 
     public function mount(): void
     {
         $this->services = Service::orderBy('name')->get();
         $this->barber = Barber::where('is_active', true)->first();
         $this->idempotency_key = (string) Str::uuid();
-
+       
         if ($this->services->isNotEmpty()) {
             $this->service_id = $this->services->first()->id;
         }
+
+        $this->selected_date = now()->toDateString();
+        $this->generateSlots();
     }
 
     public function submit(): void
     {
-        $data = $this->validate([
-            'service_id' => ['required', 'exists:services,id'],
-            'customer_name' => ['required', 'string', 'max:255'],
-            'customer_phone' => ['required', 'string', 'max:50'],
-            'start_at' => ['required', 'date'],
-            'notes' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $this->validate(
+            [
+                'service_id' => ['required', 'exists:services,id'],
+                'customer_name' => ['required', 'string', 'max:255'],
+                'country_code' => ['required', 'string', 'max:10'],
+                'phone_local' => ['required', 'string', 'regex:/^(44|45|48)\d{6,8}$/'],
+                'selected_date' => ['required', 'date'],
+                'selected_slot' => ['required', 'string'],
+                'notes' => ['nullable', 'string', 'max:1000'],
+                'customer_email' => ['required', 'email', 'max:255'],
+
+            ],
+            [
+                'phone_local.regex' => 'Kosovo numbers must start with 44, 45, or 48 (e.g. 44123123).',
+            ]
+        );
+
+        $data['customer_phone'] = $this->country_code . $this->phone_local;
+        $this->customer_phone = $data['customer_phone'];
+
+        $data['customer_email'] = $this->customer_email;
 
         Appointment::where('status', 'pending')
             ->where('created_at', '<', now()->subMinutes(10))
             ->update(['status' => 'canceled']);
 
-        $startAt = Carbon::parse($data['start_at']);
+        $startAt = Carbon::parse($this->selected_date . ' ' . $this->selected_slot);
+
 
         if (now()->gte($startAt)) {
             $this->addError('start_at', 'Please choose a future time.');
@@ -96,8 +122,10 @@ class BookingForm extends Component
             return;
         }
 
+        $data['start_at'] = $startAt->toDateTimeString();
         $appointment = $bookingService->createPendingAppointment($data, $this->barber->id, $this->idempotency_key);
-        $bookingService->createVerification($data['customer_phone']);
+        
+        $bookingService->createVerification($data['customer_phone'],$data['customer_email']);
 
         $this->pending_appointment_id = $appointment->id;
         $this->step = 'verify';
@@ -155,7 +183,20 @@ class BookingForm extends Component
         
         event(new AppointmentBooked($appointment));
         
-        $this->reset(['customer_name', 'customer_phone', 'start_at', 'notes', 'verification_code', 'pending_appointment_id']);
+        $this->reset([
+            'customer_name',
+            'customer_email',
+            'phone_local',
+            'selected_date',
+            'selected_slot',
+            'notes',
+            'verification_code',
+            'pending_appointment_id',
+        ]);
+        $this->country_code = '+383';
+        $this->selected_date = now()->toDateString();
+        $this->generateSlots();
+
         $this->suggested_start_at = null;
         $this->idempotency_key = (string) Str::uuid();
         $this->step = 'form';
@@ -167,4 +208,60 @@ class BookingForm extends Component
     {
         return view('livewire.booking-form');
     }
+
+    
+
+    public function generateSlots(): void
+    {
+        $this->available_slots = [];
+        $this->selected_slot = null;
+
+        if(!$this->selected_date || !$this->service_id){
+            return;
+        }
+
+        $service = Service::find($this->service_id);
+        if(!$service){
+            return;
+        }
+
+        $date = Carbon::parse($this->selected_date);
+        $open = $date->copy()->setTime(9, 0);
+        $close = $date->copy()->setTime(20, 0);
+
+        $slot = $open->copy();
+        $isToday = $date->isSameDay(now());
+
+        while($slot->copy()->addMinutes($service->duration_minutes)->lte($close)){
+            $isFuture = $isToday ? now()->lt($slot) : true;
+            if($isFuture && app(BookingService::class)->isSlotAvailable(
+                $this->barber->id,
+                $slot,
+                $service->duration_minutes
+            )){
+                $this->available_slots[] = $slot->format('H:i');
+            }
+            $slot->addMinutes($service->duration_minutes);
+        }
+        logger()->info('slots debug', [
+            'date' => $this->selected_date,
+            'service_id' => $this->service_id,
+            'barber_id' => $this->barber?->id,
+            'open' => $open->toDateTimeString(),
+            'close' => $close->toDateTimeString(),
+    ]);
+
+    }
+
+    public function updatedSelectedDate(): void
+    {
+        $this->generateSlots();
+    }
+
+
+    public function updatedServiceId(): void
+    {
+        $this->generateSlots();
+    }
+
 }
