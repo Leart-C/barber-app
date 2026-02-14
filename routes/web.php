@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 //Booking
 Route::get('/', function () {
     return view('booking');
-});
+})->name('booking');
 //Dashboard
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -87,6 +87,9 @@ Route::middleware(['auth','admin'])->group(function () {
 
     Route::post('/admin/revenue/rent',[RevenueController::class,'updateRent'])
         ->name('admin.revenue.rent');
+
+    Route::post('/admin/revenue/close-month', [RevenueController::class,'closeMonth'])
+        ->name('admin.revenue.close');
 });
     
     // Cancel by token (public)

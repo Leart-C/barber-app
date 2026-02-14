@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Events\AppointmentBooked;
 use App\Events\AppointmentCanceled;
+use App\Events\MonthClosed;
+use App\Listeners\CreateMonthlyReport;
 use App\Listeners\NotifyAdminAppointmentCanceled;
 use App\Listeners\SendAdminBookingNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -22,6 +24,10 @@ class EventServiceProvider extends ServiceProvider
 
         AppointmentCanceled::class=>[
             NotifyAdminAppointmentCanceled::class,
+        ],
+
+        MonthClosed::class=>[
+            CreateMonthlyReport::class,
         ]
     ];
 

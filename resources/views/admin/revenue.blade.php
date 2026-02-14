@@ -19,8 +19,14 @@
         </div>
 
         @if (session('message'))
-            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
+            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
                 {{ session('message') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-800 shake">
+                {{ session('error') }}
             </div>
         @endif
 
@@ -41,7 +47,23 @@
                 <p class="text-sm text-[var(--muted)]">This Year</p>
                 <p class="text-xl font-semibold">€{{ number_format($year / 100, 2) }}</p>
             </div>
+            <div class="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 border-emerald-200 bg-emerald-50 text-emerald-900">
+                <p class="text-sm text-[var(--muted)] ">Net - This Month</p>
+                <p class="text-xl font-semibold text-emerald-900 font-semibold">€{{ number_format($netMonth / 100, 2) }}</p>
+            </div>
+            <div class="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 border-emerald-200 bg-emerald-50 text-emerald-900">
+                <p class="text-sm text-[var(--muted)] ">Avg Ticket</p>
+                <p class="text-xl font-semibold text-emerald-900 font-semibold">€{{ number_format($avgTicket / 100, 2) }}</p>
+            </div>
         </div>
+
+        <form method="POST" action="{{ route('admin.revenue.close') }}"
+            class="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 grid gap-3 sm:grid-cols-3">
+            @csrf
+            <div class="flex items-end">
+                <button class="w-full rounded-xl bg-[var(--accent)] px-3 py-2 text-white">Close Month</button>
+            </div>
+        </form>
 
         <form method="POST" action="{{ route('admin.revenue.rent') }}"
             class="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 grid gap-3 sm:grid-cols-3">

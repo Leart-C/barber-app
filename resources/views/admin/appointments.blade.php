@@ -26,7 +26,7 @@
 
 
 <body class="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
-    <div class="mx-auto w-full max-w-xl px-5 py-10">
+    <div class="mx-auto w-full max-w-md px-4 py-6 sm:max-w-xl sm:px-6 sm:py-10">
         <div class="mb-6 text-center">
             <p class="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Admin</p>
             <h1 class="mt-3 text-2xl font-semibold">Appointments</h1>

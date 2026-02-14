@@ -183,7 +183,20 @@ class BookingForm extends Component
         
         event(new AppointmentBooked($appointment));
         
-        $this->reset(['customer_name', 'customer_phone','customer_email', 'start_at', 'notes', 'verification_code', 'pending_appointment_id']);
+        $this->reset([
+            'customer_name',
+            'customer_email',
+            'phone_local',
+            'selected_date',
+            'selected_slot',
+            'notes',
+            'verification_code',
+            'pending_appointment_id',
+        ]);
+        $this->country_code = '+383';
+        $this->selected_date = now()->toDateString();
+        $this->generateSlots();
+
         $this->suggested_start_at = null;
         $this->idempotency_key = (string) Str::uuid();
         $this->step = 'form';

@@ -11,7 +11,10 @@ class AppointmentStatusController extends Controller
 {
     public function markDone(Appointment $appointment): RedirectResponse
     {
-        $appointment->update(['status'=>'done']);
+        $appointment->update
+        (
+            ['status'=>'done','done_at'=>now()]
+        );
 
         return back()->with('message','Appointment marked as done');
     }

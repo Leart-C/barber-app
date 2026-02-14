@@ -32,6 +32,7 @@ class BookingService
             'status' => 'pending',
             'cancel_token' => (string) Str::uuid(),
             'customer_email' => $data['customer_email'],
+            'price_cents' => $service->price_cents,
         ]);
     }
 
