@@ -90,6 +90,9 @@ Route::middleware(['auth','admin'])->group(function () {
 
     Route::post('/admin/revenue/close-month', [RevenueController::class,'closeMonth'])
         ->name('admin.revenue.close');
+    
+    Route::get('/admin/revenue/report/{report}',[RevenueController::class,'pdf'])
+        ->name('admin.revenue.pdf');
 });
     
     // Cancel by token (public)

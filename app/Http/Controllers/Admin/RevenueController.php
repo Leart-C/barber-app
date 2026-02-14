@@ -9,6 +9,7 @@ use App\Models\RevenueReport;
 use App\Models\Setting;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class RevenueController extends Controller
 {
@@ -39,6 +40,11 @@ class RevenueController extends Controller
         $week = $sum($weekStart);
         $year = $sum($yearStart);
 
+        $reports = RevenueReport::query()
+            ->orderBy('month','desc')
+            ->limit(6)
+            ->get();
+
         return view('admin.revenue',[
             'today' => $todayRevenue,
             'week' => $week,
@@ -49,7 +55,8 @@ class RevenueController extends Controller
             'todayRevenue'=>$todayRevenue,
             'todayCount'=>$todayCount,
             'avgTicket'=>$avgTicket,
-            'monthCanceled'=>$monthCanceled
+            'monthCanceled'=>$monthCanceled,
+            'reports'=>$reports,
         ]);
     }
 
@@ -77,5 +84,11 @@ class RevenueController extends Controller
         event(new MonthClosed($monthStart, $monthEnd,(float) $rentEur));
 
         return back()->with('message', 'Successfully Closed');
+    }
+
+    public function pdf(RevenueReport $report){
+        $pdf = Pdf::loadView('admin.revenue-pdf',['report'=>$report]);
+
+        return $pdf->download('revenue-' .$report->month.'.pdf');
     }
 }

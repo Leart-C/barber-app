@@ -19,7 +19,7 @@
         </div>
 
         @if (session('message'))
-            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
                 {{ session('message') }}
             </div>
         @endif
@@ -57,12 +57,31 @@
             </div>
         </div>
 
+        <h2>Reports</h2>
+
+        @forelse ($reports as $report)
+            <div class="rounded-xl border border-[var(--line)] bg-[var(--card)] p-4 flex items-center justify-between">
+                <div class="grid gap-1">
+                    <p class="font-medium">{{ $report->month }}</p> 
+                    <p class="text-sm text-[var(--muted)]">Gross: €{{ number_format($report->gross_cents / 100, 2) }}</p> 
+                    <p class="text-sm text-[var(--muted)]">Net: €{{ number_format($report->net_cents / 100, 2) }}</p> 
+                </div>
+                <a href="{{ route('admin.revenue.pdf', $report) }}" class="rounded-lg border border-[var(--line)] px-3 py-2 text-sm hover:bg-[var(--accent-soft)]">Download PDF</a>
+            </div>
+        @empty
+            <p>No Reports yet </p>
+        @endforelse
+
         <form method="POST" action="{{ route('admin.revenue.close') }}"
             class="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 grid gap-3 sm:grid-cols-3">
             @csrf
-            <div class="flex items-end">
-                <button class="w-full rounded-xl bg-[var(--accent)] px-3 py-2 text-white">Close Month</button>
-            </div>
+                <div class="sm:col-span-2">
+                    <h1 class="text-base font-semibold">Close Month</h1> 
+                    <p class="text-sm text-[var(--muted)]">Freeze this month's totals into a report</p>
+                </div>
+                <div class="flex items-end">
+                    <button class="w-full rounded-xl bg-[var(--accent)] px-3 py-2 text-white">Close Month</button>
+                </div>
         </form>
 
         <form method="POST" action="{{ route('admin.revenue.rent') }}"
