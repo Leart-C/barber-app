@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\Barber;
 use App\Models\PhoneVerification;
 use App\Models\Service;
+use App\Models\Unavailability;
 use App\Services\BookingService;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
@@ -41,6 +42,8 @@ class BookingForm extends Component
 
     public $customer_email;
 
+    public $next_unavailability;
+
     public function mount(): void
     {
         $this->services = Service::orderBy('name')->get();
@@ -53,6 +56,10 @@ class BookingForm extends Component
 
         $this->selected_date = now()->toDateString();
         $this->generateSlots();
+
+        $this->next_unavailability = Unavailability::where('end_at','>',now())
+            ->orderBy('start_at')
+            ->first();
     }
 
     public function submit(): void
@@ -241,7 +248,7 @@ class BookingForm extends Component
             )){
                 $this->available_slots[] = $slot->format('H:i');
             }
-            $slot->addMinutes($service->duration_minutes);
+            $slot->addMinutes(15);
         }
         logger()->info('slots debug', [
             'date' => $this->selected_date,

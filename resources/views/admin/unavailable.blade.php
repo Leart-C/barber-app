@@ -9,6 +9,7 @@
 </head>
 
 <body class="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
+    @include('partials.toast')
     <div class="mx-auto max-w-xl px-6 py-10">
         <div class="mb-4 flex items-center justify-between">
             <h1 class="text-2xl font-semibold">Unavailable Times</h1>
@@ -18,12 +19,6 @@
                 Admin Home
             </a>
         </div>
-
-        @if (session('message'))
-            <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
-                {{ session('message') }}
-            </div>
-        @endif
 
         <form method="POST" action="{{ route('admin.unavailable.store') }}" class="grid gap-3 mb-6">
             @csrf
@@ -55,29 +50,44 @@
                             Blocked
                         </span>
                     </div>
-
-                    <div class="mt-3 space-y-2 text-sm">
+                    {{-- update --}}
+                    <form method="POST" action="{{ route('admin.unavailable.update', $block) }}"
+                        class="mt-3 space-y-2 text-sm">
+                        @csrf
+                        @method('PATCH')
                         <div>
                             <p class="text-xs text-[var(--muted)] uppercase tracking-wide">From</p>
-                            <p class="text-base font-semibold">
-                                {{ \Carbon\Carbon::parse($block->start_at)->format('Y-m-d - H:i') }}
-                            </p>
+                            <input type="datetime-local" name="start_at"
+                                value="{{ \Carbon\Carbon::parse($block->start_at)->format('Y-m-d\TH:i') }}"
+                                class="rounded-xl border border-[var(--line)] px-3 py-2">
                         </div>
 
                         <div>
                             <p class="text-xs text-[var(--muted)] uppercase tracking-wide">To</p>
-                            <p class="text-base font-semibold">
-                                {{ \Carbon\Carbon::parse($block->end_at)->format('Y-m-d - H:i') }}
-                            </p>
+                            <input type="datetime-local" name="end_at"
+                                value="{{ \Carbon\Carbon::parse($block->end_at)->format('Y-m-d\TH:i') }}"
+                                class="rounded-xl border border-[var(--line)] px-3 py-2">
                         </div>
 
                         <div>
                             <p class="text-xs text-[var(--muted)] uppercase tracking-wide">Reason</p>
-                            <p class="text-sm">
-                                {{ $block->reason ?? 'No reason provided' }}
-                            </p>
+                            <input type="text" name="reason" value="{{ $block->reason ?? '' }}"
+                                class="rounded-xl border border-[var(--line)] px-3 py-2">
                         </div>
-                    </div>
+                        <button
+                            class="w-full rounded-xl bg-[var(--accent)] px-3 py-2 text-white hover:opacity-90">Save</button>
+                    </form>
+                    {{-- delete --}}
+                    <form method="POST" action="{{ route('admin.unavailable.destroy', $block) }}"
+                        class="mt-3 space-y-2 text-sm">
+                        @csrf
+                        @method('DELETE')
+
+                        <button
+                            class="w-full rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700 hover:bg-rose-100"
+                            type="submit">Delete
+                        </button>
+                    </form>
                 </div>
 
             @empty

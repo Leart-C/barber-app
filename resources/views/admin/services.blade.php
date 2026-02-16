@@ -9,6 +9,7 @@
 </head>
 
 <body class="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
+    @include('partials.toast')
     <div class="mx-auto max-w-4xl px-6 py-10">
         <div class="mb-6 flex items-center justify-between">
             <h1 class="text-2xl font-semibold">Price List</h1>
@@ -17,13 +18,7 @@
                 Admin Home
             </a>
         </div>
-
-        @if (session('message'))
-            <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
-                {{ session('message') }}
-            </div>
-        @endif
-
+        
         {{-- Add new service --}}
         <form method="POST" action="{{ route('admin.services.store') }}" class="grid gap-3 mb-6 sm:grid-cols-4">
             @csrf
@@ -71,8 +66,7 @@
                         </button>
                     </form>
 
-                    <form method="POST" action="{{ route('admin.services.destroy', $service) }}"
-                        class="sm:col-span-4">
+                    <form method="POST" action="{{ route('admin.services.destroy', $service) }}" class="sm:col-span-4">
                         @csrf
                         @method('DELETE')
                         <button

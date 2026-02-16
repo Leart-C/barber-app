@@ -18,7 +18,10 @@ class Appointment extends Model
         'notes',
         'status',
         'done_at',
-        'price_cents'
+        'canceled_at',
+        'rescheduled_at',
+        'price_cents',
+        'customer_email',
     ];
 
     protected $casts = [
