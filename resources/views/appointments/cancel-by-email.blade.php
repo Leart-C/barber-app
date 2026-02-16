@@ -20,8 +20,10 @@
         <h1 class="text-2xl font-semibold mb-2">Cancel or Reschedule</h1>
         <p class="text-[var(--muted)] mb-6">Enter your email to manage your appointment.</p>
 
-        <form method="POST" action="{{ route('cancel.by.email.send') }}" class="grid gap-3 mb-4">
+        <form id="send-code-form" x-data="{ loading: false }" @submit="loading = true" method="POST"
+            action="{{ route('cancel.by.email.send') }}" class="grid gap-3 mb-4">
             @csrf
+
             <label class="text-sm text-[var(--muted)]">Email</label>
             <input type="email" name="email" value="{{ old('email', $email ?? '') }}"
                 class="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-base">
@@ -30,8 +32,26 @@
                 <div class="text-sm text-red-600">{{ $message }}</div>
             @enderror
 
-            <button class="rounded-xl bg-[var(--accent)] px-3 py-2 text-white">Send Code</button>
+            <button id="send-code-button" type="submit"
+                class="mt-2 inline-flex items-center justify-center rounded-2xl bg-[var(--accent)] px-4 py-3 text-base text-white shadow hover:opacity-90"
+                :disabled="loading">
+                <span id="send-code-text">Send Code</span>
+            </button>
         </form>
+
+        <script>
+            const form = document.getElementById('send-code-form');
+            const btn = document.getElementById('send-code-button');
+            const text = document.getElementById('send-code-text');
+
+            if (form && btn && text) {
+                form.addEventListener('submit', () => {
+                    text.textContent = 'Sending code...';
+                    btn.disabled = true;
+                });
+            }
+        </script>
+
 
         <form method="POST" action="{{ route('cancel.by.email.verify') }}" class="grid gap-3">
             @csrf

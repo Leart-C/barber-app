@@ -79,7 +79,7 @@ class RevenueController extends Controller
 
         $alreadyClosed = RevenueReport::where('month',$monthKey)->exists();
 
-        if($alreadyClosed) return back()->with('error', 'Monthly already closed');
+        if($alreadyClosed) return back()->with('message', 'Monthly already closed');
         
         event(new MonthClosed($monthStart, $monthEnd,(float) $rentEur));
 

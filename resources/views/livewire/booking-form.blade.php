@@ -1,4 +1,4 @@
-<div wire:poll.3s="generateSlots">
+<div wire:poll.10s="generateSlots">
     @if (session()->has('message'))
         <div id="flash-message" x-data x-init="setTimeout(() => $el.remove(), 3000)"
             class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
