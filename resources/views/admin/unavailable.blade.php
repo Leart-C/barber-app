@@ -83,7 +83,7 @@
                         @csrf
                         @method('DELETE')
 
-                        <button
+                        <button onclick="return confirm('Are you sure you want to elete this unavaiable time?')"
                             class="w-full rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700 hover:bg-rose-100"
                             type="submit">Delete
                         </button>

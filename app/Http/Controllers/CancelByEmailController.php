@@ -23,9 +23,17 @@ class CancelByEmailController extends Controller
             'email'=>['required','email','max:255'],
         ]);
 
-        $randomCode = random_int(100000, 999999);
-
         $email = $request->input('email');
+
+        $last = PhoneVerification::where('phone',$email)
+            ->latest('created_at')
+            ->first();
+
+        if($last && $last->created_at->gt(now()->subSeconds(60))){
+            return back()->withErrors(['email' => 'Please wait before requesting another code.'])->withInput();
+        }
+
+        $randomCode = random_int(100000, 999999);
 
         $code = (string) $randomCode;
 
@@ -34,7 +42,7 @@ class CancelByEmailController extends Controller
             'code'=>$code,
             'expires_at'=>now()->addMinutes(10)
         ]);
-
+        
         Mail::to($email)->send(new VerificationCodeMail($code));
 
         return back()->with('email',$email)->with('message','Verification code sent.')->withInput();
