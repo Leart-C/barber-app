@@ -42,7 +42,8 @@ class BookingService
         $code = (string) random_int(100000, 999999);
 
         $verification = PhoneVerification::create([
-            'phone' => $phone,
+            // We verify by email, so store email here.
+            'phone' => $email,
             'code' => $code,
             'expires_at' => now()->addMinutes(10),
         ]);

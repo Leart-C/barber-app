@@ -5,10 +5,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin – Unavailable</title>
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
 </head>
 
 <body class="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
+
     @include('partials.toast')
     <div class="mx-auto max-w-xl px-6 py-10">
         <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -60,6 +62,9 @@
                             <input type="datetime-local" name="start_at"
                                 value="{{ \Carbon\Carbon::parse($block->start_at)->format('Y-m-d\TH:i') }}"
                                 class="rounded-xl border border-[var(--line)] px-3 py-2">
+                            @error('start_at')
+                                <div class="text-xs text-red-600">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div>
@@ -67,6 +72,9 @@
                             <input type="datetime-local" name="end_at"
                                 value="{{ \Carbon\Carbon::parse($block->end_at)->format('Y-m-d\TH:i') }}"
                                 class="rounded-xl border border-[var(--line)] px-3 py-2">
+                            @error('end_at')
+                                <div class="text-xs text-red-600">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div>
@@ -74,9 +82,13 @@
                             <input type="text" name="reason" value="{{ $block->reason ?? '' }}"
                                 class="rounded-xl border border-[var(--line)] px-3 py-2">
                         </div>
-                        <button
-                            class="w-full rounded-xl bg-[var(--success-bg)] text-[var(--success-text)] border border-[var(--success-border)]
-                            px-3 py-2 text-white hover:opacity-90">Save</button>
+                       <button
+                            class="w-full rounded-xl border border-[var(--success-border)] bg-[var(--success-bg)]
+                                    px-3 py-2 text-[var(--success-text)] hover:opacity-90"
+                            type="submit">
+                            Save
+                        </button>
+
                     </form>
                     {{-- delete --}}
                     <form method="POST" action="{{ route('admin.unavailable.destroy', $block) }}"
@@ -97,6 +109,18 @@
             @endforelse
         </div>
     </div>
+
+  
+    @if (session('message'))
+    <script>
+        window.addEventListener('load', () => {
+            if (window.showToast) {
+                showToast(@json(session('message')));
+            }
+        });
+    </script>
+@endif
+
 </body>
 
 </html>
