@@ -148,6 +148,7 @@ class BookingForm extends Component
 
         $this->pending_appointment_id = $appointment->id;
         $this->step = 'verify';
+
     }
 
 
@@ -157,10 +158,17 @@ class BookingForm extends Component
             'verification_code' => ['required','string','size:6'],
         ]);
 
-        $verification = PhoneVerification::where('phone',$this->customer_phone)
-            ->where('code', $data['verification_code'])
+        $verification = PhoneVerification::where('code', $data['verification_code'])
             ->whereNull('verified_at')
-            ->where('expires_at','>',now())
+            ->where('expires_at', '>', now())
+            ->where(function ($query) {
+                if (!empty($this->customer_email)) {
+                    $query->where('phone', $this->customer_email);
+                }
+                if (!empty($this->customer_phone)) {
+                    $query->orWhere('phone', $this->customer_phone);
+                }
+            })
             ->latest()
             ->first();
         
@@ -196,12 +204,12 @@ class BookingForm extends Component
             return;
         }
 
-        $bookingService->confirmAppointment($this->pending_appointment_id);
+        $appointment->update(['status' => 'booked']);
 
-        $appointment = Appointment::findOrFail($this->pending_appointment_id);
+        event(new AppointmentBooked($appointment->fresh()));
         
-        event(new AppointmentBooked($appointment));
-        
+        $this->dispatch('toast', message: 'Appointment confirmed.');
+
         $this->reset([
             'customer_name',
             'customer_email',
@@ -220,7 +228,6 @@ class BookingForm extends Component
         $this->idempotency_key = (string) Str::uuid();
         $this->step = 'form';
 
-        session()->flash('message','Appointment confirmed.');
     }
 
       public function render()
@@ -262,14 +269,6 @@ class BookingForm extends Component
             }
             $slot->addMinutes(15);
         }
-        logger()->info('slots debug', [
-            'date' => $this->selected_date,
-            'service_id' => $this->service_id,
-            'barber_id' => $this->barber?->id,
-            'open' => $open->toDateTimeString(),
-            'close' => $close->toDateTimeString(),
-    ]);
-
     }
 
     public function updatedSelectedDate(): void

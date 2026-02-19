@@ -9,7 +9,7 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#0f172a">
 
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,6 +18,7 @@
 </head>
 
 <body class="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
+    @include('partials.toast')
     <div class="mx-auto w-full max-w-lg px-4 py-8 sm:py-12">
         <div class="mb-6 text-center">
             <p class="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Barber Booking</p>
@@ -39,16 +40,18 @@
 
     @livewireScripts
     <script>
-        const flash = document.getElementById('flash-message');
-        if (flash) {
-            setTimeout(() => flash.remove(), 3000);
-        }
-        if ("serviceWorker" in navigator) {
-            window.addEventListener("load", () => {
-                navigator.serviceWorker.register("/sw.js");
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('toast', (e) => {
+                showToast(e?.message ?? e);
             });
-        }
+        });
     </script>
+
+
+    @if (session()->has('message'))
+        <script>showToast(@json(session('message')));</script>
+    @endif
+
 </body>
 
 </html>

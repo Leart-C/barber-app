@@ -1,13 +1,8 @@
-<div wire:poll.10s="generateSlots">
-    @if (session()->has('message'))
-        <div id="flash-message" x-data x-init="setTimeout(() => $el.remove(), 3000)"
-            class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
-            {{ session('message') }}
-        </div>
-    @endif
-
+<div>
     @if ($next_unavailability)
-        <div wire:ignore.self id="unavailable-modal" data-unavailability-id="{{ $next_unavailability->id }}"
+        <div wire:ignore.self id="unavailable-modal"
+            data-unavailability-id="{{ $next_unavailability->id }}"
+            data-updated-at="{{ $next_unavailability->updated_at?->timestamp }}"
             class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
             <div class="w-full max-w-xs rounded-2xl bg-white p-5 shadow-xl text-sm">
                 <p class="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Unavailable</p>
@@ -28,7 +23,9 @@
         </div>
     @endif
 
+
     @if ($step === 'form')
+        <div wire:poll.10s="generateSlots"></div>
         <form wire:submit.prevent="submit" class="grid gap-4">
             <div wire:loading wire:target="submit"
                 class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800 text-sm">
@@ -158,19 +155,18 @@
     const modal = document.getElementById('unavailable-modal');
     const ok = document.getElementById('unavailable-ok');
 
-    if (modal) {
+    if (modal && ok) {
         const id = modal.dataset.unavailabilityId;
-        const dismissed = localStorage.getItem('dismissed_unavailability');
+        const updatedAt = modal.dataset.updatedAt;
+        const key = `dismissed_unavailability_${id}_${updatedAt}`;
 
-        if (id && dismissed === id) {
+        if (localStorage.getItem(key)) {
             modal.classList.add('hidden');
         }
 
-        if (ok) {
-            ok.addEventListener('click', () => {
-                localStorage.setItem('dismissed_unavailability', id);
-                modal.classList.add('hidden');
-            });
-        }
+        ok.addEventListener('click', () => {
+            localStorage.setItem(key, '1');
+            modal.classList.add('hidden');
+        });
     }
 </script>

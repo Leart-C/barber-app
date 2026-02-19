@@ -37,6 +37,9 @@ class UnavailabilityController extends Controller
             'reason' => ['nullable', 'string', 'max:255'],
         ]);
 
+        $data['start_at'] = \Carbon\Carbon::parse($data['start_at'])->toDateTimeString();
+        $data['end_at']   = \Carbon\Carbon::parse($data['end_at'])->toDateTimeString();
+
         $unavailability->update($data);
 
         return back()->with('message','Unavailable time updated.');

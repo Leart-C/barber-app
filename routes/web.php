@@ -77,9 +77,6 @@ Route::middleware(['auth','admin'])->group(function () {
     Route::post('/admin/services', [ServiceController::class, 'store'])
         ->name('admin.services.store');
 
-    Route::patch('/admin/services/{service}', [ServiceController::class, 'update'])
-        ->name('admin.services.update');
-
     Route::delete('/admin/services/{service}', [ServiceController::class, 'destroy'])
         ->name('admin.services.destroy');
 
