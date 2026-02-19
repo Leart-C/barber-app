@@ -10,14 +10,14 @@
 
 <body class="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
     <div class="mx-auto max-w-4xl px-6 py-10">
-        <div class="mb-6 flex items-center justify-between">
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <p class="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Admin</p>
                 <h1 class="mt-2 text-2xl font-semibold">Today</h1>
                 <p class="mt-1 text-sm text-[var(--muted)]">Overview of today’s appointments.</p>
             </div>
             <a href="{{ route('admin.appointments') }}"
-                class="inline-flex items-center rounded-full border border-[var(--line)] bg-[var(--card)] px-4 py-2 text-sm text-[var(--ink)] shadow-sm hover:bg-[var(--accent-soft)]">
+                class="w-full sm:w-auto text-center inline-flex justify-center items-center rounded-full border border-[var(--line)] bg-[var(--card)] px-4 py-2 text-sm text-[var(--ink)] shadow-sm hover:bg-[var(--accent-soft)]">
                 All appointments
             </a>
         </div>

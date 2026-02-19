@@ -32,13 +32,17 @@
 
         <div class="mt-5 rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 text-sm text-[var(--muted)]">
             Need to change later?
-            <a href="{{ route('cancel.by.phone.show') }}" class="underline text-[var(--ink)]">Manage your
+            <a href="{{ route('cancel.by.email.show') }}" class="underline text-[var(--ink)]">Manage your
                 appointment</a>
         </div>
     </div>
 
     @livewireScripts
     <script>
+        const flash = document.getElementById('flash-message');
+        if (flash) {
+            setTimeout(() => flash.remove(), 3000);
+        }
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
                 navigator.serviceWorker.register("/sw.js");

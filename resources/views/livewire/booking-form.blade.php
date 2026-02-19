@@ -1,7 +1,30 @@
-<div>
+<div wire:poll.10s="generateSlots">
     @if (session()->has('message'))
-        <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
+        <div id="flash-message" x-data x-init="setTimeout(() => $el.remove(), 3000)"
+            class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
             {{ session('message') }}
+        </div>
+    @endif
+
+    @if ($next_unavailability)
+        <div wire:ignore.self id="unavailable-modal" data-unavailability-id="{{ $next_unavailability->id }}"
+            class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="w-full max-w-xs rounded-2xl bg-white p-5 shadow-xl text-sm">
+                <p class="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Unavailable</p>
+                <h2 class="mt-1 text-base font-semibold text-[var(--ink)]">Barber is not available</h2>
+                <p class="mt-3 text-sm text-[var(--muted)]">
+                    {{ \Carbon\Carbon::parse($next_unavailability->start_at)->format('Y-m-d H:i') }}
+                    →
+                    {{ \Carbon\Carbon::parse($next_unavailability->end_at)->format('Y-m-d H:i') }}
+                </p>
+                <p class="mt-2 text-sm">
+                    {{ $next_unavailability->reason ?? 'No reason provided' }}
+                </p>
+                <button id="unavailable-ok" type="button"
+                    class="mt-4 w-full rounded-xl bg-[var(--accent)] px-4 py-2 text-white">
+                    OK
+                </button>
+            </div>
         </div>
     @endif
 
@@ -52,8 +75,7 @@
                 </select>
 
                 <input type="text" wire:model="phone_local"
-                    class="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-base"
-                    placeholder="44xxxxxx">
+                    class="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-base" placeholder="44xxxxxx">
 
                 @error('phone_local')
                     <div class="text-sm text-red-600">{{ $message }}</div>
@@ -107,12 +129,10 @@
 
             <button type="submit"
                 class="mt-2 inline-flex items-center justify-center rounded-2xl bg-[var(--accent)] px-4 py-3 text-base text-white shadow hover:opacity-90"
-                wire:loading.attr="disabled"
-                wire:target="submit">
+                wire:loading.attr="disabled" wire:target="submit">
                 <span wire:loading.remove wire:target="submit">Book Appointment</span>
                 <span wire:loading wire:target="submit">Sending code…</span>
             </button>
-
         </form>
     @else
         <form wire:submit.prevent="verify" class="grid gap-4">
@@ -133,3 +153,24 @@
         </form>
     @endif
 </div>
+
+<script>
+    const modal = document.getElementById('unavailable-modal');
+    const ok = document.getElementById('unavailable-ok');
+
+    if (modal) {
+        const id = modal.dataset.unavailabilityId;
+        const dismissed = localStorage.getItem('dismissed_unavailability');
+
+        if (id && dismissed === id) {
+            modal.classList.add('hidden');
+        }
+
+        if (ok) {
+            ok.addEventListener('click', () => {
+                localStorage.setItem('dismissed_unavailability', id);
+                modal.classList.add('hidden');
+            });
+        }
+    }
+</script>

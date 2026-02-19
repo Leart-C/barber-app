@@ -13,6 +13,12 @@
         --line: #e2e8f0;
         --accent: #0f172a;
         --accent-soft: #f1f5f9;
+        --success-bg: #ecfdf3;
+        --success-text: #067647;
+        --success-border: #a7f3d0;
+        --danger-bg: #fef2f2;
+        --danger-text: #b42318;
+        --danger-border: #fecaca;
     }
 
     html {
@@ -29,13 +35,24 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-6px); }
-  40% { transform: translateX(6px); }
-  60% { transform: translateX(-4px); }
-  80% { transform: translateX(4px); }
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    20% {
+        transform: translateX(-6px);
+    }
+    40% {
+        transform: translateX(6px);
+    }
+    60% {
+        transform: translateX(-4px);
+    }
+    80% {
+        transform: translateX(4px);
+    }
 }
 
 .shake {
-  animation: shake 0.4s ease-in-out;
+    animation: shake 0.4s ease-in-out;
 }

@@ -7,10 +7,13 @@ use App\Models\Appointment;
 use App\Models\Barber;
 use App\Models\PhoneVerification;
 use App\Models\Service;
+use App\Models\Unavailability;
 use App\Services\BookingService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 use Illuminate\Support\Str;
+
 
 
 class BookingForm extends Component
@@ -41,6 +44,8 @@ class BookingForm extends Component
 
     public $customer_email;
 
+    public $next_unavailability;
+
     public function mount(): void
     {
         $this->services = Service::orderBy('name')->get();
@@ -53,6 +58,10 @@ class BookingForm extends Component
 
         $this->selected_date = now()->toDateString();
         $this->generateSlots();
+
+        $this->next_unavailability = Unavailability::where('end_at','>',now())
+            ->orderBy('start_at')
+            ->first();
     }
 
     public function submit(): void
@@ -121,6 +130,16 @@ class BookingForm extends Component
             $this->addError('start_at', 'This time is already booked. Please choose another slot');
             return;
         }
+
+        $email = $data['customer_email'];
+        $ip = request()->ip();
+        $key = "booking:{$ip}:{$email}";
+
+        if(RateLimiter::tooManyAttempts($key,5)){
+            $this->addError('customer_email','Please wait before booking again');
+            return;
+        }
+        RateLimiter::hit($key,600);
 
         $data['start_at'] = $startAt->toDateTimeString();
         $appointment = $bookingService->createPendingAppointment($data, $this->barber->id, $this->idempotency_key);
@@ -241,7 +260,7 @@ class BookingForm extends Component
             )){
                 $this->available_slots[] = $slot->format('H:i');
             }
-            $slot->addMinutes($service->duration_minutes);
+            $slot->addMinutes(15);
         }
         logger()->info('slots debug', [
             'date' => $this->selected_date,
