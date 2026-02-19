@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\TodayDashboardController;
 use App\Http\Controllers\Admin\UnavailabilityController;
 use App\Http\Controllers\AppointmentCancelController;
+use App\Http\Controllers\CancelByEmailController;
 use App\Http\Controllers\CancelByPhoneController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Appointment;
@@ -90,6 +91,14 @@ Route::middleware(['auth','admin'])->group(function () {
 
     Route::post('/admin/revenue/close-month', [RevenueController::class,'closeMonth'])
         ->name('admin.revenue.close');
+    
+    Route::get('/admin/revenue/report/{report}',[RevenueController::class,'pdf'])
+        ->name('admin.revenue.pdf');
+
+    Route::patch('/admin/unavailable/{unavailability}',[UnavailabilityController::class,'update'])
+        ->name('admin.unavailable.update');
+    Route::delete('/admin/unavailable/{unavailability}',[UnavailabilityController::class,'destroy'])
+        ->name('admin.unavailable.destroy');
 });
     
     // Cancel by token (public)
@@ -98,7 +107,7 @@ Route::middleware(['auth','admin'])->group(function () {
     Route::post('/cancel/{token}', [AppointmentCancelController::class,'cancel'])
         ->name('appointments.cancel');
     
-        // Cancel by phone (public)
+    // Cancel by phone (public)
     Route::get('/cancel-by-phone', [CancelByPhoneController::class, 'show'])->name('cancel.by.phone.show');
     Route::post('/cancel-by-phone', [CancelByPhoneController::class, 'sendCode'])->name('cancel.by.phone.send');
     Route::post('/cancel-by-phone/verify', [CancelByPhoneController::class, 'verify'])->name('cancel.by.phone.verify');
@@ -112,6 +121,24 @@ Route::middleware(['auth','admin'])->group(function () {
         ->name('cancel.by.phone.reschedule.form');
     Route::post('/cancel-by-phone/{appointment}/reschedule/save', [CancelByPhoneController::class, 'reschedule'])   
         ->name('cancel.by.phone.reschedule.save');
+
+    //Cancel by email (public)
+    Route::get('/cancel-by-email',[CancelByEmailController::class,'show'])
+        ->name('cancel.by.email.show');
+    Route::post('/cancel-by-email',[CancelByEmailController::class,'sendCode'])
+        ->name('cancel.by.email.send');
+    Route::post('/cancel-by-email/verify',[CancelByEmailController::class,'verify'])
+        ->name('cancel.by.email.verify');
+    Route::post('/cancel-by-email/{appointment}/cancel',[CancelByEmailController::class,'cancel'])
+        ->name('cancel.by.email.cancel');
+    Route::get('/cancel-by-email/{appointment}/reschedule',[CancelByEmailController::class, 'rescheduleForm'])
+        ->name('cancel.by.email.reschedule.form');
+    Route::post('/cancel-by-email/{appointment}/reschedule/save',[CancelByEmailController::class, 'reschedule'])
+        ->name('cancel.by.email.reschedule.save');
+    Route::get('/cancel-by-email/verify', function () {
+        return redirect()->route('cancel.by.email.show');
+    });
+
 
 
 

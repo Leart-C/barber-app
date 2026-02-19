@@ -16,7 +16,7 @@ class AppointmentStatusController extends Controller
             ['status'=>'done','done_at'=>now()]
         );
 
-        return back()->with('message','Appointment marked as done');
+        return back()->with('toast','Appointment marked as done');
     }
 
     public function cancel(Appointment $appointment): RedirectResponse

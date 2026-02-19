@@ -26,18 +26,13 @@
 
 
 <body class="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
+    @include('partials.toast')
     <div class="mx-auto w-full max-w-md px-4 py-6 sm:max-w-xl sm:px-6 sm:py-10">
         <div class="mb-6 text-center">
             <p class="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Admin</p>
             <h1 class="mt-3 text-2xl font-semibold">Appointments</h1>
             <p class="mt-2 text-sm text-[var(--muted)]">Live updates, clean and fast.</p>
         </div>
-
-        @if (session('message'))
-            <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
-                {{ session('message') }}
-            </div>
-        @endif
 
         <form method="GET" action="{{ route('admin.appointments') }}"
             class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -75,24 +70,38 @@
 
     <div id="toast"
         class="fixed left-1/2 top-6 z-50 hidden -translate-x-1/2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow">
-        New appointment booked
+        Notification
     </div>
 
     @livewireScripts
     <script>
         document.addEventListener('livewire:init', () => {
-            Livewire.on('new-appointment', () => {
+            function showToast(message) {
                 const audio = document.getElementById('notify-sound');
                 if (audio) audio.play().catch(() => {});
-
                 const toast = document.getElementById('toast');
                 if (!toast) return;
+                toast.textContent = message;
                 toast.classList.remove('hidden');
                 setTimeout(() => toast.classList.add('hidden'), 3000);
+
+            }
+            Livewire.on('new-appointment', () => {
+                showToast('New appointment booked');
             });
+
+            Livewire.on('appointment-rescheduled', () => {
+                showToast('Appointment rescheduled')
+            })
+
+            Livewire.on('appointment-canceled', () => {
+                showToast('Appointment canceled');
+            })
+            @if (session('toast'))
+                showToast(@json(session('toast')));
+            @endif
         });
     </script>
-
 
 </body>
 

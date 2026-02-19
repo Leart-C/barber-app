@@ -29,4 +29,23 @@ class UnavailabilityController extends Controller
 
         return back()->with('message','Unavailable time added');
     }
+
+    public function update(Request $request, Unavailability $unavailability){
+        $data = $request->validate([
+            'start_at'=>['required', 'date'],
+            'end_at' => ['required', 'date', 'after:start_at'],
+            'reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $unavailability->update($data);
+
+        return back()->with('message','Unavailable time updated.');
+        
+    }
+
+    public function destroy(Unavailability $unavailability){
+        $unavailability->delete();
+
+        return back()->with('message','Unavailable time deleted.');
+    }
 }
