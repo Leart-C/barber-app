@@ -83,9 +83,10 @@ class BookingService
             })
             ->where(function ($query) use ($startAt, $endAt) {
                 $query->where('start_at', '<', $endAt)
-                    ->whereRaw("DATE_ADD(start_at, INTERVAL duration_minutes MINUTE) > ?", [
-                        $startAt->toDateTimeString(),
+                    ->whereRaw("start_at + (duration_minutes || ' minutes')::interval > ?", [
+                    $startAt->toDateTimeString(),
                     ]);
+
             })
             ->exists();
     }
@@ -110,8 +111,8 @@ class BookingService
             $overlap = Appointment::where('barber_id', $barberId)
                 ->whereIn('status', ['pending', 'booked'])
                 ->where('start_at', '<', $endAt)
-                ->whereRaw("DATE_ADD(start_at, INTERVAL duration_minutes MINUTE) > ?", [
-                    $startAt->toDateTimeString(),
+                ->whereRaw("start_at + (duration_minutes || ' minutes')::interval > ?", [
+                $startAt->toDateTimeString(),
                 ])
                 ->orderBy('start_at')
                 ->first();
