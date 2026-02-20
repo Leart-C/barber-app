@@ -22,4 +22,5 @@ RUN npm install && npm run build && ls -la public/build && ls -la public/build/a
 EXPOSE 8000
 CMD php artisan migrate --force && \
     php artisan config:cache && php artisan route:cache && php artisan view:cache && \
-    php artisan serve --host 0.0.0.0 --port ${PORT:-8000}
+    php -S 0.0.0.0:${PORT:-8000} -t public public/index.php
+
