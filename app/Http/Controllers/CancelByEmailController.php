@@ -43,7 +43,7 @@ class CancelByEmailController extends Controller
             'expires_at'=>now()->addMinutes(10)
         ]);
         
-        Mail::to($email)->send(new VerificationCodeMail($code));
+        Mail::to($email)->queue(new VerificationCodeMail($code));
 
         return back()->with('email',$email)->with('message','Verification code sent.')->withInput();
     }
