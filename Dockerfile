@@ -17,7 +17,7 @@ RUN composer install --no-dev --prefer-dist --optimize-autoloader
 
 # Node + build assets
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs
-RUN npm install && npm run build
+RUN npm install && npm run build && ls -la public/build && ls -la public/build/assets
 
 EXPOSE 8000
 CMD php artisan migrate --force && \
