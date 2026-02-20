@@ -8,10 +8,15 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
-class VerificationCodeMail extends Mailable
+class VerificationCodeMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
+
+    public $tries = 3;
+    public $backoff = [30,120,300];
 
     /**
      * Create a new message instance.
@@ -48,5 +53,12 @@ class VerificationCodeMail extends Mailable
     public function attachments(): array
     {
         return [];
+    }
+
+    public function failed(Throwable $e):void
+    {
+        Log::error('Verification email failed',[
+            'error'=>$e->getMessage(),
+        ]);
     }
 }

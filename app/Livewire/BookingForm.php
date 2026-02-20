@@ -110,13 +110,16 @@ class BookingForm extends Component
             return;
         }
 
-        $dailyCount = Appointment::where('customer_phone', $data['customer_phone'])
-            ->whereDate('start_at', $startAt->toDateString())
-            ->whereIn('status', ['pending', 'booked'])
-            ->count();
+        $dailyCount = Appointment::where(function ($q) use ($data){
+            $q->where('customer_phone',$data['customer_phone'])
+                ->orWhere('customer_email',$data['customer_email']);
+        })
+        ->whereDate('start_at',$startAt->toDateString())
+        ->whereIn('status',['pending','booked'])
+        ->count();
 
         if ($dailyCount >= 1) {
-            $this->addError('customer_phone', 'You already have a booking for this day.');
+            $this->addError('customer_email', 'You already have a booking for this day.');
             return;
         }
 

@@ -48,7 +48,7 @@ class BookingService
             'expires_at' => now()->addMinutes(10),
         ]);
 
-        Mail::to($email)->send(new VerificationCodeMail($code));
+        Mail::to($email)->queue(new VerificationCodeMail($code));
 
         return $verification;
     }
