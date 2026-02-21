@@ -255,6 +255,9 @@ class BookingForm extends Component
         }
 
         $date = Carbon::parse($this->selected_date);
+        if ($date->isWeekend()) {
+            return;
+        }
         $open = $date->copy()->setTime(9, 0);
         $close = $date->copy()->setTime(20, 0);
 
