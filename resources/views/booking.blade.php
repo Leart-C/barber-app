@@ -33,9 +33,11 @@
 
         <div class="mt-5 rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 text-sm text-[var(--muted)]">
             Need to change later?
-            <a href="{{ route('cancel.by.email.show') }}" class="underline text-[var(--ink)]">Manage your
-                appointment</a>
+            <a href="{{ route('cancel.by.email.show') }}" class="underline text-[var(--ink)]">Manage your appointment</a>
+            <span class="mx-2">•</span>
+            <a href="{{ route('bookings.lookup') }}" class="underline text-[var(--ink)]">My bookings</a>
         </div>
+
     </div>
 
     @livewireScripts
