@@ -265,12 +265,23 @@ class BookingForm extends Component
         $isToday = $date->isSameDay(now());
 
         $newSlots = [];
+        $dayStart = $date->copy()->startOfDay();
+        $dayEnd = $date->copy()->endOfDay();
+        $unavailabilities = Unavailability::where('start_at', '<', $dayEnd)
+            ->where('end_at', '>', $dayStart)
+            ->get();
 
         while($slot->copy()->addMinutes($service->duration_minutes)->lte($close)){
             $isFuture = $isToday ? now()->lt($slot) : true;
 
+            $endAt = $slot->copy()->addMinutes($service->duration_minutes);
+            $overlapUnavailable = $unavailabilities->contains(function ($u) use ($slot, $endAt) {
+                return $u->start_at < $endAt && $u->end_at > $slot;
+            });
+
             if(
                 $isFuture &&
+                !$overlapUnavailable &&
                 app(BookingService::class)->isSlotAvailable(
                     $this->barber->id,
                     $slot,
