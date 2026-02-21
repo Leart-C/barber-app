@@ -24,8 +24,11 @@
     @endif
 
 
-    @if ($step === 'form' && !$selected_slot)
-        <div wire:poll.15s="generateSlots"></div>
+    @if ($step === 'form' )
+        @if(!$selected_slot)
+            <div wire:poll.15s="generateSlots"></div>
+        @endif
+       
         <form wire:submit.prevent="submit" class="grid gap-4">
             <div wire:loading wire:target="submit"
                 class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800 text-sm">
