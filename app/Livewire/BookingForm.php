@@ -242,39 +242,51 @@ class BookingForm extends Component
 
     public function generateSlots(): void
     {
-        $this->available_slots = [];
-        $this->selected_slot = null;
-
         if(!$this->selected_date || !$this->service_id){
+            $this->available_slots = [];
             return;
         }
 
         $service = Service::find($this->service_id);
         if(!$service){
+            $this->available_slots = [];
             return;
         }
 
         $date = Carbon::parse($this->selected_date);
-        if ($date->isWeekend()) {
+        if($date->isWeekend()){
+            $this->available_slots = [];
             return;
         }
-        $open = $date->copy()->setTime(9, 0);
-        $close = $date->copy()->setTime(20, 0);
 
+        $open = $date->copy()->setTime(9,0);
+        $close = $date->copy()->setTime(20,0);
         $slot = $open->copy();
         $isToday = $date->isSameDay(now());
 
+        $newSlots = [];
+
         while($slot->copy()->addMinutes($service->duration_minutes)->lte($close)){
             $isFuture = $isToday ? now()->lt($slot) : true;
-            if($isFuture && app(BookingService::class)->isSlotAvailable(
-                $this->barber->id,
-                $slot,
-                $service->duration_minutes
-            )){
-                $this->available_slots[] = $slot->format('H:i');
+
+            if(
+                $isFuture &&
+                app(BookingService::class)->isSlotAvailable(
+                    $this->barber->id,
+                    $slot,
+                    $service->duration_minutes
+                )
+            ){
+                $newSlots[] = $slot->format('H:i');
             }
             $slot->addMinutes(15);
         }
+        $this->available_slots = $newSlots;
+
+        if($this->selected_slot && !in_array($this->selected_slot, $newSlots,true)){
+            $this->selected_slot = null;
+        }
+        
     }
 
     public function updatedSelectedDate(): void
