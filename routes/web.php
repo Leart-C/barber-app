@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\TodayDashboardController;
 use App\Http\Controllers\Admin\UnavailabilityController;
 use App\Http\Controllers\AppointmentCancelController;
+use App\Http\Controllers\BookingLookupController;
 use App\Http\Controllers\CancelByEmailController;
 use App\Http\Controllers\CancelByPhoneController;
 use App\Http\Controllers\ProfileController;
@@ -136,7 +137,16 @@ Route::middleware(['auth','admin'])->group(function () {
         return redirect()->route('cancel.by.email.show');
     });
 
+    //my bookings
+    Route::get('/bookings',function(){
+        return view('bookings.lookup');
+    })->name('bookings.lookup');
 
+    Route::post('/bookings',[BookingLookupController::class,'sendCode'])
+        ->name('bookings.send');
+    
+    Route::post('/bookings/verify',[BookingLookupController::class,'verifyCode'])
+        ->name('bookings.verify');
 
 
 
