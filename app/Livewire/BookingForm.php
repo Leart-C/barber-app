@@ -114,12 +114,12 @@ class BookingForm extends Component
             $q->where('customer_phone',$data['customer_phone'])
                 ->orWhere('customer_email',$data['customer_email']);
         })
-        ->whereDate('start_at',$startAt->toDateString())
-        ->whereIn('status',['pending','booked'])
-        ->count();
+            ->whereDate('start_at',$startAt->toDateString())
+            ->whereIn('status',['pending','booked'])
+            ->count();
 
         if ($dailyCount >= 1) {
-            $this->addError('customer_email', 'You already have a booking for this day.');
+            $this->addError('customer_email', 'You already have a booking for this day. Try to cancel or rechedule');
             return;
         }
 

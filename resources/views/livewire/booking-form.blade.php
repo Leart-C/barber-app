@@ -24,8 +24,8 @@
     @endif
 
 
-    @if ($step === 'form')
-        <div wire:poll.10s="generateSlots"></div>
+    @if ($step === 'form' && !$selected_slot)
+        <div wire:poll.15s="generateSlots"></div>
         <form wire:submit.prevent="submit" class="grid gap-4">
             <div wire:loading wire:target="submit"
                 class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800 text-sm">
@@ -71,8 +71,9 @@
                     <option value="+383">+383 (Kosovo)</option>
                 </select>
 
-                <input type="text" wire:model="phone_local"
-                    class="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-base" placeholder="44xxxxxx">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" wire:model="phone_local"
+                    class="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-base"
+                    placeholder="44xxxxxx">
 
                 @error('phone_local')
                     <div class="text-sm text-red-600">{{ $message }}</div>
